@@ -12,3 +12,10 @@ services:
     build:
       context: .
       dockerfile: Fiap.FileCut.UploadApi/Dockerfile
+
+  fiap.filecut.processamentoapi:
+    image: ${DOCKER_REGISTRY-}fiap-filecut/processamento-api
+    container_name: filecut-processamento-api
+    build:
+      context: .
+      dockerfile: Fiap.FileCut.ProcessamentoApi/Dockerfile
