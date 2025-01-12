@@ -1,39 +1,32 @@
+x-web-configs:
+  &webapi-defaults
+  networks:
+    - local_network
+  depends_on:
+    - keycloak
+  environment:
+    - ASPNETCORE_ENVIRONMENT=Development
+    - ASPNETCORE_HTTP_PORTS=8080
+    - ASPNETCORE_HTTPS_PORTS=8081
+
+    - OPENID_AUTHORITY=${OPENID_AUTHORITY}
+    - OPENID_AUDIENCE=${OPENID_AUDIENCE}
+  ports:
+    - "8080"
+    - "8081"
+  volumes:
+    - ${APPDATA}/Microsoft/UserSecrets:/home/app/.microsoft/usersecrets:ro
+    - ${APPDATA}/ASP.NET/Https:/home/app/.aspnet/https:ro
+
 services:
   fiap.filecut.gestaoapi:
-    environment:
-      - ASPNETCORE_ENVIRONMENT=Development
-      - ASPNETCORE_HTTP_PORTS=8080
-      - ASPNETCORE_HTTPS_PORTS=8081
-    ports:
-      - "8080"
-      - "8081"
-    volumes:
-      - ${APPDATA}/Microsoft/UserSecrets:/home/app/.microsoft/usersecrets:ro
-      - ${APPDATA}/ASP.NET/Https:/home/app/.aspnet/https:ro
+    <<: *webapi-defaults
 
   fiap.filecut.uploadapi:
-    environment:
-      - ASPNETCORE_ENVIRONMENT=Development
-      - ASPNETCORE_HTTP_PORTS=8080
-      - ASPNETCORE_HTTPS_PORTS=8081
-    ports:
-      - "8080"
-      - "8081"
-    volumes:
-      - ${APPDATA}/Microsoft/UserSecrets:/home/app/.microsoft/usersecrets:ro
-      - ${APPDATA}/ASP.NET/Https:/home/app/.aspnet/https:ro
+    <<: *webapi-defaults
 
   fiap.filecut.processamentoapi:
-    environment:
-      - ASPNETCORE_ENVIRONMENT=Development
-      - ASPNETCORE_HTTP_PORTS=8080
-      - ASPNETCORE_HTTPS_PORTS=8081
-    ports:
-      - "8080"
-      - "8081"
-    volumes:
-      - ${APPDATA}/Microsoft/UserSecrets:/home/app/.microsoft/usersecrets:ro
-      - ${APPDATA}/ASP.NET/Https:/home/app/.aspnet/https:ro
+    <<: *webapi-defaults
 
   keycloak:
     container_name: keycloak

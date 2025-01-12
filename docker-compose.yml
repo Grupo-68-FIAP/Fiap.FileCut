@@ -22,5 +22,6 @@ services:
 
   keycloak:
     image: quay.io/keycloak/keycloak:22.0
+    container_name: keycloak
     restart: always
     command: start-dev

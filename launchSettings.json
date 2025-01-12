@@ -6,7 +6,8 @@
       "serviceActions": {
         "fiap.filecut.gestaoapi": "StartDebugging",
         "fiap.filecut.uploadapi": "StartDebugging",
-        "fiap.filecut.processamentoapi": "StartDebugging"
+        "fiap.filecut.processamentoapi": "StartDebugging",
+        "keycloak": "StartWithoutDebugging"
       }
     }
   }
