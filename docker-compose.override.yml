@@ -1,7 +1,5 @@
 x-web-configs:
   &webapi-defaults
-  networks:
-    - local_network
   depends_on:
     - keycloak
   environment:
@@ -17,15 +15,20 @@ x-web-configs:
   volumes:
     - ${APPDATA}/Microsoft/UserSecrets:/home/app/.microsoft/usersecrets:ro
     - ${APPDATA}/ASP.NET/Https:/home/app/.aspnet/https:ro
+  networks:
+    - local_network
 
 services:
   fiap.filecut.gestaoapi:
+    container_name: filecut-gestao-api
     <<: *webapi-defaults
 
   fiap.filecut.uploadapi:
+    container_name: filecut-upload-api
     <<: *webapi-defaults
 
   fiap.filecut.processamentoapi:
+    container_name: filecut-processamento-api
     <<: *webapi-defaults
 
   keycloak:
