@@ -4,7 +4,8 @@
       "commandName": "DockerCompose",
       "commandVersion": "1.0",
       "serviceActions": {
-        "fiap.filecut.gestaoapi": "StartDebugging"
+        "fiap.filecut.gestaoapi": "StartDebugging",
+        "fiap.filecut.uploadapi": "StartDebugging"
       }
     }
   }

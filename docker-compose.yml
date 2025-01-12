@@ -5,3 +5,10 @@ services:
     build:
       context: .
       dockerfile: Fiap.FileCut.GestaoApi/Dockerfile
+
+  fiap.filecut.uploadapi:
+    image: ${DOCKER_REGISTRY-}fiap-filecut/upload-api
+    container_name: filecut-upload-api
+    build:
+      context: .
+      dockerfile: Fiap.FileCut.UploadApi/Dockerfile
