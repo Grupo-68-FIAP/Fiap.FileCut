@@ -7,7 +7,8 @@
         "fiap.filecut.gestaoapi": "StartDebugging",
         "fiap.filecut.uploadapi": "StartDebugging",
         "fiap.filecut.processamentoapi": "StartDebugging",
-        "keycloak": "StartWithoutDebugging"
+        "keycloak": "StartWithoutDebugging",
+        "rabbitmq": "StartWithoutDebugging"
       }
     }
   }

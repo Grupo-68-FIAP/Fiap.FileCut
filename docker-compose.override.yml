@@ -1,7 +1,9 @@
+
 x-web-configs:
   &webapi-defaults
   depends_on:
     - keycloak
+    - rabbitmq
   environment:
     - ASPNETCORE_ENVIRONMENT=Development
     - ASPNETCORE_HTTP_PORTS=8080
@@ -44,10 +46,25 @@ services:
     networks:
       - local_network
 
+  rabbitmq:
+    container_name: rabbitmq
+    ports:
+      - "5672:5672"     
+      - "15672:15672"   
+    environment:
+      RABBITMQ_DEFAULT_USER: ${RABBITMQ_DEFAULT_USER}
+      RABBITMQ_DEFAULT_PASS: ${RABBITMQ_DEFAULT_PASS}
+    volumes:
+      - rabbitmq_data:/var/lib/rabbitmq
+      - rabbitmq_logs:/var/log/rabbitmq
+    networks:
+      - local_network
+
 networks:
   local_network:
     driver: bridge
-  db_network:
 
 volumes:
   keycloak_data:  
+  rabbitmq_data:
+  rabbitmq_logs:
