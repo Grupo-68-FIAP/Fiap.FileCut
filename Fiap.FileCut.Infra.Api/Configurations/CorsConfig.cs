@@ -67,9 +67,5 @@ namespace Fiap.FileCut.Infra.Api.Configurations
         {
             app.UseCors("CorsConfig");
         }
-        public static void UseTest(this IApplicationBuilder app)
-        {
-            Console.WriteLine("Test");
-        }
     }
 }
