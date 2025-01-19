@@ -1,9 +1,0 @@
-[submodule "Fiap.FileCut.GestaoApi"]
-	path = Fiap.FileCut.GestaoApi
-	url = git@github.com:Grupo-68-FIAP/Fiap.FileCut.GestaoApi.git
-[submodule "Fiap.FileCut.ProcessamentoApi"]
-	path = Fiap.FileCut.ProcessamentoApi
-	url = git@github.com:Grupo-68-FIAP/Fiap.FileCut.ProcessamentoApi.git
-[submodule "Fiap.FileCut.UploadApi"]
-	path = Fiap.FileCut.UploadApi
-	url = git@github.com:Grupo-68-FIAP/Fiap.FileCut.UploadApi.git
