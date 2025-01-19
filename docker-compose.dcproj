@@ -8,6 +8,7 @@
     <DockerLaunchAction>LaunchBrowser</DockerLaunchAction>
     <DockerServiceUrl>{Scheme}://localhost:{ServicePort}/swagger</DockerServiceUrl>
     <DockerServiceName>fiap.filecut.gestaoapi</DockerServiceName>
+		<IsPackable>false</IsPackable>
   </PropertyGroup>
   <ItemGroup>
     <None Include="docker-compose.override.yml">
