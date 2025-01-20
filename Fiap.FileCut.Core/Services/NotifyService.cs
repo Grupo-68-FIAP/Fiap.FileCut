@@ -4,15 +4,17 @@ using Fiap.FileCut.Core.Objects;
 
 namespace Fiap.FileCut.Core.Services;
 
-public class NotifyService(IEnumerable<INotifyAdapter> notifyAdapters) : INotifyService
+public class NotifyService : INotifyService
 {
-    private readonly IEnumerable<INotifyAdapter> _notifyAdapter = notifyAdapters;
-
-    public async Task NotifyAsync<T>(NotifyContext<T> context)
+    private readonly List<INotifyAdapter> _notifyAdapter;
+    public NotifyService(
+        List<INotifyAdapter> notifyAdapters
+    )
     {
-        foreach (var adapter in _notifyAdapter)
-        {
-            await adapter.NotifyAsync(context);
-        }
+        _notifyAdapter = notifyAdapters;
+    }
+    public void Notify<T>(NotifyContext<T> context)
+    {
+        _notifyAdapter.ForEach(x => x.Notify(context));
     }
 }
