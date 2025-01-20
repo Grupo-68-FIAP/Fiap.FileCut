@@ -1,16 +1,15 @@
 ﻿using Fiap.FileCut.Core.Interfaces.Adapters;
+using Fiap.FileCut.Core.Interfaces.Factories;
 using Fiap.FileCut.Core.Objects;
 using Microsoft.Extensions.Logging;
-using Microsoft.Extensions.Options;
-using System.Net;
 using System.Net.Mail;
 
 namespace Fiap.FileCut.Core.Adapters
 {
-    public class EmailNotifyAdapter(ILogger<EmailNotifyAdapter> logger, IOptions<SmtpProperties> optSmtpProperties) : INotifyAdapter
+    public class EmailNotifyAdapter(ILogger<EmailNotifyAdapter> logger, ISmtpClient smtpClient) : INotifyAdapter
     {
         private readonly ILogger<EmailNotifyAdapter> _logger = logger;
-        private readonly SmtpProperties _smtpProperties = optSmtpProperties.Value;
+        private readonly ISmtpClient _smtpClient = smtpClient;
 
         public Task NotifyAsync<T>(NotifyContext<T> notifyContext)
         {
@@ -29,7 +28,7 @@ namespace Fiap.FileCut.Core.Adapters
         {
             var mailMessage = new MailMessage
             {
-                From = new MailAddress(_smtpProperties.Username),
+                // From = new MailAddress("mail@test.com"),
                 Subject = notifyContext.Context.Subject,
                 Body = notifyContext.Context.Body,
                 IsBodyHtml = notifyContext.Context.IsBodyHtml
@@ -48,12 +47,7 @@ namespace Fiap.FileCut.Core.Adapters
         {
             try
             {
-                using var client = new SmtpClient(_smtpProperties.Server, _smtpProperties.Port) { EnableSsl = _smtpProperties.EnableSsl };
-                if (_smtpProperties.Username == null && _smtpProperties.Password == null)
-                {
-                    client.Credentials = new NetworkCredential(_smtpProperties.Username, _smtpProperties.Password);
-                }
-                await client.SendMailAsync(message);
+                await _smtpClient.SendMailAsync(message);
                 _logger.LogDebug("Email sent to {UserId}", userId);
             }
             catch (Exception ex)
@@ -61,5 +55,6 @@ namespace Fiap.FileCut.Core.Adapters
                 _logger.LogError(ex, "Error sending email to {UserId}", userId);
             }
         }
+
     }
 }
