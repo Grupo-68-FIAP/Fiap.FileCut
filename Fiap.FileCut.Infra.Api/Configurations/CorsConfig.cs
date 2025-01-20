@@ -41,19 +41,8 @@ namespace Fiap.FileCut.Infra.Api.Configurations
 
                 options.AddPolicy("CorsConfig", builder =>
                     {
-                        if (allowOrigins == "*")
-                            builder.AllowAnyOrigin();
-                        else
                             builder.WithOrigins(allowOrigins.Split(','));
-
-                        if (allowMethod == "*")
-                            builder.AllowAnyMethod();
-                        else
                             builder.WithMethods(allowMethod.Split(","));
-
-                        if (allowHeaders == "*")
-                            builder.AllowAnyHeader();
-                        else
                             builder.WithHeaders(allowHeaders.Split(","));
                     });
             });
