@@ -25,12 +25,12 @@ namespace Fiap.FileCut.Infra.Api.Configurations
             }
             public NotificationBuilder EmailNotify(IConfiguration configuration)
             {
-                _services.AddScoped<INotifyAdapter, EmailNotifyAdapter>();
-                SmtpConfigure(_services, configuration);
+                if (SmtpConfigure(_services, configuration))
+                    _services.AddScoped<INotifyAdapter, EmailNotifyAdapter>();
                 return this;
             }
 
-            private static void SmtpConfigure(IServiceCollection services, IConfiguration configuration)
+            private static bool SmtpConfigure(IServiceCollection services, IConfiguration configuration)
             {
                 var smtpServer = Environment.GetEnvironmentVariable("SMTP_SERVER");
                 var smtpUsername = Environment.GetEnvironmentVariable("SMTP_USERNAME");
@@ -55,15 +55,17 @@ namespace Fiap.FileCut.Infra.Api.Configurations
                         options.Password = smtpPassword;
                         options.EnableSsl = bool.Parse(smtpEnableSsl ?? "false");
                     });
-                    return;
+                    return true;
                 }
 
                 var smtpConfigurationSection = configuration.GetSection("SmtpConfig");
-                var confg = smtpConfigurationSection.Get<SmtpProperties>();
-                if (confg != null)
+                if (smtpConfigurationSection.Exists())
                 {
                     services.Configure<SmtpProperties>(smtpConfigurationSection);
+                    return true;
                 }
+
+                return false;
             }
         }
     }
