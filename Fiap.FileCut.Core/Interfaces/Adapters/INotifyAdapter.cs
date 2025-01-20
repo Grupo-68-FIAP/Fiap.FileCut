@@ -4,5 +4,5 @@ namespace Fiap.FileCut.Core.Interfaces.Adapters;
 
 public interface INotifyAdapter
 {
-    void Notify<T>(NotifyContext<T> notifyContext);
+    Task NotifyAsync<T>(NotifyContext<T> notifyContext);
 }
