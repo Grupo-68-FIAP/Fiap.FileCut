@@ -1,12 +1,8 @@
-using System.Net.Mail;
-
 namespace Fiap.FileCut.Core.Objects;
 
-public class NotifyContext<T> (T context, Guid userId, MailAddress mail)
+public class NotifyContext<T> (T context, Guid userId)
 {
-    public readonly T Context = context;
+    public T Context { get; set; } = context;
 
     public readonly Guid UserId = userId;
-
-    public readonly MailAddress Mail = mail;
 }

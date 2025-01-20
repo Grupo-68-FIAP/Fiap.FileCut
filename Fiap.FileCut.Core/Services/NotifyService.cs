@@ -8,6 +8,14 @@ public class NotifyService(IEnumerable<INotifyAdapter> notifyAdapters) : INotify
 {
     private readonly IEnumerable<INotifyAdapter> _notifyAdapter = notifyAdapters;
 
+    public void Notify<T>(NotifyContext<T> context)
+    {
+        foreach (var adapter in _notifyAdapter)
+        {
+            Task.Run(() => adapter.NotifyAsync(context));
+        }
+    }
+
     public async Task NotifyAsync<T>(NotifyContext<T> context)
     {
         foreach (var adapter in _notifyAdapter)

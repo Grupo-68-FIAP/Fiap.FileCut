@@ -4,8 +4,7 @@ namespace Fiap.FileCut.Core.Interfaces.Services;
 
 public interface INotifyService
 {
-    public void Notify<T>(NotifyContext<T> notifyContext) => 
-        Task.Run(async () => await NotifyAsync(notifyContext));
+    void Notify<T>(NotifyContext<T> context);
 
     Task NotifyAsync<T>(NotifyContext<T> context);
 }
