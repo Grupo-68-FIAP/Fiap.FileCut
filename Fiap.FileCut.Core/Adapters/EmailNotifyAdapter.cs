@@ -26,7 +26,7 @@ namespace Fiap.FileCut.Core.Adapters
             try
             {
                 await SendEmailAsync(mailMessage);
-                _logger.LogInformation("Sending email to {UserId} ", notifyContext.UserId);
+                _logger.LogDebug("Sending email to {UserId} ", notifyContext.UserId);
             }
             catch (Exception ex)
             {
