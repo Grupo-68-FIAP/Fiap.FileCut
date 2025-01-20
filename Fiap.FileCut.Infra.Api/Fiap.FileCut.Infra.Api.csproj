@@ -20,4 +20,9 @@
 				<PackageReference Include="Swashbuckle.AspNetCore" Version="7.2.0" />
 		</ItemGroup>
 
+		<ItemGroup>
+		  <ProjectReference Include="..\Fiap.FileCut.Core\Fiap.FileCut.Core.csproj" />
+		  <ProjectReference Include="..\Fiap.FileCut.Infra.Storage\Fiap.FileCut.Infra.Storage.csproj" />
+		</ItemGroup>
+
 </Project>
