@@ -28,7 +28,7 @@ namespace Fiap.FileCut.Core.Adapters
         {
             var mailMessage = new MailMessage
             {
-                // From = new MailAddress("mail@test.com"),
+                From = new MailAddress(_smtpClient.GetProperties().Username),
                 Subject = notifyContext.Context.Subject,
                 Body = notifyContext.Context.Body,
                 IsBodyHtml = notifyContext.Context.IsBodyHtml
