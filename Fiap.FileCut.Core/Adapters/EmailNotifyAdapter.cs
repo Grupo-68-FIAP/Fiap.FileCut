@@ -36,12 +36,11 @@ namespace Fiap.FileCut.Core.Adapters
 
         public async Task SendEmailAsync(MailMessage message)
         {
-            using var client = new SmtpClient(_smtpProperties.Server, _smtpProperties.Port);
+            using var client = new SmtpClient(_smtpProperties.Server, _smtpProperties.Port) { EnableSsl = _smtpProperties.EnableSsl };
             if (_smtpProperties.Username == null && _smtpProperties.Password == null)
             {
                 client.Credentials = new NetworkCredential(_smtpProperties.Username, _smtpProperties.Password);
             }
-            client.EnableSsl = _smtpProperties.EnableSsl;
             await client.SendMailAsync(message);
         }
     }
