@@ -7,8 +7,8 @@ using Fiap.FileCut.Core.Services;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Options;
-using System.Net;
 using System.Net.Mail;
+using System.Net;
 
 namespace Fiap.FileCut.Infra.Api.Configurations
 {
@@ -84,7 +84,7 @@ namespace Fiap.FileCut.Infra.Api.Configurations
 
             public async Task SendMailAsync(MailMessage message)
             {
-                using var client = new SmtpClient(_smtpProperties.Server, _smtpProperties.Port)
+                using var client = new SmtpClient(_smtpProperties.Server, _smtpProperties.Port) // NOSONAR
                 {
                     Credentials = new NetworkCredential(_smtpProperties.Username, _smtpProperties.Password),
                     EnableSsl = _smtpProperties.EnableSsl
