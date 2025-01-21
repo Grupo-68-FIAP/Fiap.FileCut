@@ -1,10 +1,14 @@
 ﻿using Fiap.FileCut.Core.Adapters;
 using Fiap.FileCut.Core.Interfaces.Adapters;
+using Fiap.FileCut.Core.Interfaces.Factories;
 using Fiap.FileCut.Core.Interfaces.Services;
 using Fiap.FileCut.Core.Objects;
 using Fiap.FileCut.Core.Services;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Options;
+using System.Net.Mail;
+using System.Net;
 
 namespace Fiap.FileCut.Infra.Api.Configurations
 {
@@ -26,7 +30,10 @@ namespace Fiap.FileCut.Infra.Api.Configurations
             public NotificationBuilder EmailNotify(IConfiguration configuration)
             {
                 if (SmtpConfigure(_services, configuration))
+                {
                     _services.AddScoped<INotifyAdapter, EmailNotifyAdapter>();
+                    _services.AddScoped<ISmtpClient, SmtpClientWrapper>();
+                }
                 return this;
             }
 
@@ -66,6 +73,23 @@ namespace Fiap.FileCut.Infra.Api.Configurations
                 }
 
                 return false;
+            }
+        }
+
+        public class SmtpClientWrapper(IOptions<SmtpProperties> smtpProperties) : ISmtpClient
+        {
+            private readonly SmtpProperties _smtpProperties = smtpProperties.Value;
+
+            public SmtpProperties GetProperties() => _smtpProperties;
+
+            public async Task SendMailAsync(MailMessage message)
+            {
+                using var client = new SmtpClient(_smtpProperties.Server, _smtpProperties.Port) // NOSONAR
+                {
+                    Credentials = new NetworkCredential(_smtpProperties.Username, _smtpProperties.Password),
+                    EnableSsl = _smtpProperties.EnableSsl
+                };
+                await client.SendMailAsync(message);
             }
         }
     }
