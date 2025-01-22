@@ -1,4 +1,4 @@
-﻿# Fiap.FileCut 🎬 - Sistema de conversão de vídeos em imagens
+﻿# 🎬 Fiap.FileCut - Sistema de conversão de vídeos em imagens
 
 [![Bugs](https://sonarcloud.io/api/project_badges/measure?project=Grupo-68-FIAP_Fiap.FileCut&metric=bugs)](https://sonarcloud.io/summary/new_code?id=Grupo-68-FIAP_Fiap.FileCut)
 [![Code Smells](https://sonarcloud.io/api/project_badges/measure?project=Grupo-68-FIAP_Fiap.FileCut&metric=code_smells)](https://sonarcloud.io/summary/new_code?id=Grupo-68-FIAP_Fiap.FileCut)
@@ -65,7 +65,7 @@ O sistema foi projetado seguindo o conceito de **microsserviços**. Cada compone
 
 ## 🧩 Visão Geral do Sistema
 
-- A arquitetura segue os princípios de DDD (Domain-Driven Design). Confira o [diagrama no Miro](https://miro.com/app/board/uXjVLw0z8YI=/?share_link_id=986601418356)! 🎨
+A arquitetura segue os princípios de DDD (Domain-Driven Design). Confira o [diagrama no Miro](https://miro.com/app/board/uXjVLw0z8YI=/?share_link_id=986601418356)! 🎨
 
 ![DDD do Sistema](./ddd-fiap-filecut.png)
 
