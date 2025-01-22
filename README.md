@@ -1,82 +1,82 @@
-# Fiap.FileCut
+ï»¿# Fiap.FileCut ğŸ¬ - Sistema de conversÃ£o de vÃ­deos em imagens
 
 [![Bugs](https://sonarcloud.io/api/project_badges/measure?project=Grupo-68-FIAP_Fiap.FileCut&metric=bugs)](https://sonarcloud.io/summary/new_code?id=Grupo-68-FIAP_Fiap.FileCut)
 [![Code Smells](https://sonarcloud.io/api/project_badges/measure?project=Grupo-68-FIAP_Fiap.FileCut&metric=code_smells)](https://sonarcloud.io/summary/new_code?id=Grupo-68-FIAP_Fiap.FileCut)
 [![Coverage](https://sonarcloud.io/api/project_badges/measure?project=Grupo-68-FIAP_Fiap.FileCut&metric=coverage)](https://sonarcloud.io/summary/new_code?id=Grupo-68-FIAP_Fiap.FileCut)
 
 
-## Descrição do Projeto
+## ğŸš€ DescriÃ§Ã£o do Projeto
 
-O **Fiap.FileCut** é um sistema de processamento de vídeos desenvolvido para atender demandas de escalabilidade e eficiência. Ele permite que usuários enviem vídeos, processem-nos e baixem um arquivo `.zip` contendo as imagens extraídas. Este projeto foi desenvolvido como parte de um desafio de arquitetura de software, implementando boas práticas de microsserviços, mensageria e qualidade de software.
+O **Fiap.FileCut** Ã© um sistema de processamento de vÃ­deos desenvolvido para atender demandas de escalabilidade e eficiÃªncia. Ele permite que usuÃ¡rios enviem vÃ­deos, processem-nos e baixem um arquivo `.zip` contendo as imagens extraÃ­das. Este projeto foi desenvolvido como parte de um desafio de arquitetura de software, implementando boas prÃ¡ticas de microsserviÃ§os, mensageria e qualidade de software.
 
 
-### Tecnologias Utilizadas
+### ğŸ”§ Tecnologias Utilizadas
 -   **Backend**: .NET 6.0
--   **Mensageria**: RabbitMQ
--   **Armazenamento**: Amazon S3
--   **Autenticação**: Keycloak para gerenciamento de identidade e acesso.
--   **CI/CD**: GitHub Actions com integração ao SonarQube para analise de código
--   **Testes**: xUnit, Moq e SpecFlow para testes funcionais
+-   **Mensageria**:  RabbitMQ ğŸ‡
+-   **Armazenamento**: Amazon S3 â˜ï¸
+-   **AutenticaÃ§Ã£o**: Keycloak ğŸ”
+-   **CI/CD**:  GitHub Actions + SonarQube ğŸš€
+-   **Testes**: xUnit + Moq + SpecFlow ğŸ§ª
 
-## Motivação
+## ğŸ’¡ MotivaÃ§Ã£o
 
-O projeto originou-se de um protótipo simples para demonstrar a extração de imagens de vídeos. Embora funcional, esse código inicial carecia de boas práticas e uma arquitetura robusta.
+O projeto originou-se de um protÃ³tipo simples para demonstrar a extraÃ§Ã£o de imagens de vÃ­deos. Embora funcional, esse cÃ³digo inicial carecia de boas prÃ¡ticas e uma arquitetura robusta.
 
-Agora, o objetivo é transformar esse protótipo em uma solução completa e escalável, atendendo aos seguintes requisitos:
+Agora, o objetivo Ã© transformar esse protÃ³tipo em uma soluÃ§Ã£o completa e escalÃ¡vel, atendendo aos seguintes requisitos:
 
--   Suporte ao processamento simultâneo de múltiplos vídeos
--   Persistência de dados para controle e rastreamento de status
--   Tolerância a picos de carga sem perda de requisições
--   Sistema protegido por autenticação (usuário e senha)
--   Notificações aos usuários em caso de erro
--   Arquitetura escalável e garantia de qualidade por meio de testes e CI/CD
+-   Suporte ao processamento simultÃ¢neo de mÃºltiplos vÃ­deos
+-   PersistÃªncia de dados para controle e rastreamento de status
+-   TolerÃ¢ncia a picos de carga sem perda de requisiÃ§Ãµes
+-   Sistema protegido por autenticaÃ§Ã£o (usuÃ¡rio e senha)
+-   NotificaÃ§Ãµes aos usuÃ¡rios em caso de erro
+-   Arquitetura escalÃ¡vel e garantia de qualidade por meio de testes e CI/CD
 
-## Arquitetura
+## ğŸ—ï¸ Arquitetura
 
-O sistema foi projetado seguindo o conceito de **microsserviços**. Cada componente tem uma responsabilidade específica:
+O sistema foi projetado seguindo o conceito de **microsserviÃ§os**. Cada componente tem uma responsabilidade especÃ­fica:
 
 ![Arquitetura do Sistema](./arquitetura-fiap-filecut.jpg)
 
-**Microsserviços**:
+**MicrosserviÃ§os**:
 
 1.  [Fiap.FileCut.Upload](https://github.com/Grupo-68-FIAP/Fiap.FileCut.Upload):
-    -   Recebe os vídeos dos usuários
+    -   Recebe os vÃ­deos dos usuÃ¡rios
     -   Realiza o upload para um bucket de armazenamento, incluindo um arquivo JSON de controle
     -   Publica eventos de estado em filas (upload bem-sucedido ou falhas)
 2.  [Fiap.FileCut.Gestao](https://github.com/Grupo-68-FIAP/Fiap.FileCut.Gestao):
-    -   Gerencia o estado dos processos e armazena essas informações no banco de dados
-    -   Notifica os usuários via e-mail ou outro meio em caso de falhas
+    -   Gerencia o estado dos processos e armazena essas informaÃ§Ãµes no banco de dados
+    -   Notifica os usuÃ¡rios via e-mail ou outro meio em caso de falhas
 3.  [Fiap.FileCut.Processamento](https://github.com/Grupo-68-FIAP/Fiap.FileCut.Processamento):
-    -   Monitora eventos de processamento e inicia a extração de imagens dos vídeos
-    -   Realiza a zipagem das imagens extraídas
-    -   Publica eventos em filas indicando o progresso ou conclusão do processamento
+    -   Monitora eventos de processamento e inicia a extraÃ§Ã£o de imagens dos vÃ­deos
+    -   Realiza a zipagem das imagens extraÃ­das
+    -   Publica eventos em filas indicando o progresso ou conclusÃ£o do processamento
 
 **Outros componentes:**
 
 1.  **Bucket de Armazenamento**:
-    -   Armazena os vídeos enviados e os arquivos de controle
+    -   Armazena os vÃ­deos enviados e os arquivos de controle
     -   Garante a integridade dos dados durante o fluxo todo
 2.  **MQ (Message Queue)**:
-    -   Gerencia a comunicação assíncrona entre os microsserviços
-    -   As filas estão organizadas como:
+    -   Gerencia a comunicaÃ§Ã£o assÃ­ncrona entre os microsserviÃ§os
+    -   As filas estÃ£o organizadas como:
         -   Fila 1: Controle de estado
-        -   Fila 2: Processamento de vídeos
+        -   Fila 2: Processamento de vÃ­deos
         -   Fila 3: Empacotamento de imagens
 
-## Visão Geral do Sistema com DDD
+## ğŸ§© VisÃ£o Geral do Sistema
 
-- No Miro: [Link para o Miro](https://miro.com/app/board/uXjVLw0z8YI=/?share_link_id=986601418356)
+- A arquitetura segue os princÃ­pios de DDD (Domain-Driven Design). Confira o [diagrama no Miro](https://miro.com/app/board/uXjVLw0z8YI=/?share_link_id=986601418356)! ğŸ¨
 
 ![DDD do Sistema](./ddd-fiap-filecut.png)
 
-## Como rodar projeto
+## âš™ï¸ Como rodar projeto
 
-Em desenvolvimento
+Em breve! ğŸš§
 
-## Contribuição
+## ğŸ¤ ContribuiÃ§Ã£o
 
-Sinta-se à vontade para abrir issues e enviar pull requests para melhorias ou correções no projeto.
+Fique Ã  vontade para contribuir! Abra issues e envie pull requests com melhorias ou correÃ§Ãµes. Toda ajuda Ã© bem-vinda! ğŸŒŸ
 
-## Licença
+## ğŸ“„ LicenÃ§a
 
-Este projeto está licenciado sob a licença MIT.
+Este projeto estÃ¡ licenciado sob a licenÃ§a MIT.
