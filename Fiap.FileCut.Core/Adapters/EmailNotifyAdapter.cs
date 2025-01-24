@@ -1,5 +1,5 @@
 ﻿using Fiap.FileCut.Core.Interfaces.Adapters;
-using Fiap.FileCut.Core.Interfaces.Factories;
+using Fiap.FileCut.Core.Interfaces.Handler;
 using Fiap.FileCut.Core.Objects;
 using Microsoft.Extensions.Logging;
 using System.Net.Mail;
@@ -13,10 +13,10 @@ namespace Fiap.FileCut.Core.Adapters;
 /// </summary>
 /// <param name="logger"></param>
 /// <param name="smtpClient">Smtp client to send email.</param>
-public class EmailNotifyAdapter(ILogger<EmailNotifyAdapter> logger, ISmtpClient smtpClient) : INotifyAdapter
+public class EmailNotifyAdapter(ILogger<EmailNotifyAdapter> logger, ISmtpHandler smtpClient) : INotifyAdapter
 {
     private readonly ILogger<EmailNotifyAdapter> _logger = logger;
-    private readonly ISmtpClient _smtpClient = smtpClient;
+    private readonly ISmtpHandler _smtpClient = smtpClient;
 
     /// <summary>
     /// Notify async. 

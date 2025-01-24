@@ -1,5 +1,5 @@
 ﻿using Fiap.FileCut.Core.Adapters;
-using Fiap.FileCut.Core.Interfaces.Factories;
+using Fiap.FileCut.Core.Interfaces.Handler;
 using Fiap.FileCut.Core.Objects;
 using Microsoft.Extensions.Logging;
 using Moq;
@@ -14,7 +14,7 @@ public class EmailNotifyAdapterUnitTests
     {
         // Arrange
         var logger = new Mock<ILogger<EmailNotifyAdapter>>();
-        var smtpClient = new Mock<ISmtpClient>();
+        var smtpClient = new Mock<ISmtpHandler>();
         smtpClient.Setup(x => x.SendMailAsync(It.IsAny<MailMessage>())).Returns(Task.CompletedTask);
         var adapter = new EmailNotifyAdapter(logger.Object, smtpClient.Object);
         var mailMessage = new MailMessage();
@@ -33,7 +33,7 @@ public class EmailNotifyAdapterUnitTests
         logger.Setup(x => x.Log(It.IsAny<LogLevel>(), It.IsAny<EventId>(), It.IsAny<It.IsAnyType>(),
             It.IsAny<Exception?>(), It.IsAny<Func<It.IsAnyType, Exception?, string>>()))
             .Verifiable();
-        var smtpClient = new Mock<ISmtpClient>();
+        var smtpClient = new Mock<ISmtpHandler>();
         smtpClient.Setup(x => x.SendMailAsync(It.IsAny<MailMessage>())).Returns(Task.CompletedTask);
         smtpClient.Setup(x => x.GetFrom()).Returns(new MailAddress("test@test.com"));
         var adapter = new EmailNotifyAdapter(logger.Object, smtpClient.Object);
@@ -56,7 +56,7 @@ public class EmailNotifyAdapterUnitTests
     {
         // Arrange
         var logger = new Mock<ILogger<EmailNotifyAdapter>>();
-        var smtpClient = new Mock<ISmtpClient>();
+        var smtpClient = new Mock<ISmtpHandler>();
         smtpClient.Setup(x => x.SendMailAsync(It.IsAny<MailMessage>())).Returns(Task.CompletedTask);
         var adapter = new EmailNotifyAdapter(logger.Object, smtpClient.Object);
         var notifyContext = new NotifyContext<string>("test", Guid.NewGuid());
@@ -74,7 +74,7 @@ public class EmailNotifyAdapterUnitTests
         logger.Setup(x => x.Log(It.IsAny<LogLevel>(), It.IsAny<EventId>(), It.IsAny<It.IsAnyType>(),
             It.IsAny<Exception?>(), It.IsAny<Func<It.IsAnyType, Exception?, string>>()))
             .Verifiable();
-        var smtpClient = new Mock<ISmtpClient>();
+        var smtpClient = new Mock<ISmtpHandler>();
         smtpClient.Setup(x => x.SendMailAsync(It.IsAny<MailMessage>())).Throws(new Exception());
         smtpClient.Setup(x => x.GetFrom()).Returns(new MailAddress("test@test.com"));
         var adapter = new EmailNotifyAdapter(logger.Object, smtpClient.Object);
