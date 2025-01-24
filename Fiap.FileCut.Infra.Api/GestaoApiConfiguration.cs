@@ -1,8 +1,10 @@
 ﻿using Fiap.FileCut.Core.Applications;
 using Fiap.FileCut.Core.Interfaces.Applications;
+using Fiap.FileCut.Core.Interfaces.Repository;
 using Fiap.FileCut.Core.Interfaces.Services;
 using Fiap.FileCut.Core.Services;
 using Fiap.FileCut.Infra.Api.Configurations;
+using Fiap.FileCut.Infra.Storage.LocalDisk;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.Extensions.DependencyInjection;
 
@@ -18,8 +20,14 @@ public static class GestaoApiConfiguration
         builder.Services.AddNotifications()
                 .EmailNotify(builder.Configuration);
 
-        builder.Services.AddScoped<IFileService, FileService>();
         builder.Services.AddScoped<IGestaoApplication, GestaoApplication>();
+        builder.Services.AddScoped<IFileService, FileService>();
+
+        // TODO NOSONAR: Ajustar a injeção de dependência para o repositório desejado
+        // Considerar algo como verificar se as variaveis do s3 esta populadas e injetar o S3FileRepository se nao injetar o LocalDiskFileRepository
+        builder.Services.AddScoped<IFileRepository, LocalDiskFileRepository>();
+        //builder.Services.AddScoped<IFileRepository, S3FileRepository>();
+
 
         return Task.CompletedTask;
     }
