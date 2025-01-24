@@ -1,4 +1,8 @@
-﻿using Fiap.FileCut.Infra.Api.Configurations;
+﻿using Fiap.FileCut.Core.Applications;
+using Fiap.FileCut.Core.Interfaces.Applications;
+using Fiap.FileCut.Core.Interfaces.Services;
+using Fiap.FileCut.Core.Services;
+using Fiap.FileCut.Infra.Api.Configurations;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.Extensions.DependencyInjection;
 
@@ -13,6 +17,10 @@ public static class GestaoApiConfiguration
         builder.Services.AddEnvCors();
         builder.Services.AddNotifications()
                 .EmailNotify(builder.Configuration);
+
+        builder.Services.AddScoped<IFileService, FileService>();
+        builder.Services.AddScoped<IGestaoApplication, GestaoApplication>();
+
         return Task.CompletedTask;
     }
     public static Task ScopedFileCutGestaoApi(this IServiceScope scope)
