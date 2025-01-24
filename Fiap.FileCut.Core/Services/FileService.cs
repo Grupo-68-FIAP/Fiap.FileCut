@@ -18,6 +18,11 @@ public class FileService : IFileService
         throw new NotImplementedException();
     }
 
+    public Task<List<string>> GetAllFilesName(Guid userId)
+    {
+        throw new NotImplementedException();
+    }
+
     public Task<IFormFile> GetFileAsync(Guid userId, string fileName)
     {
         return _fileRepository.GetAsync(userId, fileName);
