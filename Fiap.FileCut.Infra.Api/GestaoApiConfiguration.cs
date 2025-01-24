@@ -26,8 +26,6 @@ public static class GestaoApiConfiguration
         // TODO NOSONAR: Ajustar a injeção de dependência para o repositório desejado
         // Considerar algo como verificar se as variaveis do s3 esta populadas e injetar o S3FileRepository se nao injetar o LocalDiskFileRepository
         builder.Services.AddScoped<IFileRepository, LocalDiskFileRepository>();
-        //builder.Services.AddScoped<IFileRepository, S3FileRepository>();
-
 
         return Task.CompletedTask;
     }
