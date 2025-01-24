@@ -22,5 +22,6 @@ public class FileServiceUnitTests
         var fileService = new FileService(fileRepositoryMock.Object);
         // Act
         _ = await Assert.ThrowsAsync<NotImplementedException>(async () => await fileService.GetAllFilesName(userId));
+        // TODO NOSONAR: Implementar o teste corretamente
     }
 }
