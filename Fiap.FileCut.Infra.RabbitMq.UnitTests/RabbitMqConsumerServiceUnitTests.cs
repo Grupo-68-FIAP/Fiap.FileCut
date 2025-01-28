@@ -6,7 +6,7 @@ using System.Text;
 
 namespace Fiap.FileCut.Infra.RabbitMq.UnitTests
 {
-    public class RabbitMqConsumerServiceUnitTest
+    public class RabbitMqConsumerServiceUnitTests
     {
         [Fact]
         public async Task SubscribeAsync_WhenValidHandler_ShouldSubscribe()
