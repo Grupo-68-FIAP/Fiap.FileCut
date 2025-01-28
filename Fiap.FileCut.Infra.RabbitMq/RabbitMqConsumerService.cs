@@ -18,11 +18,9 @@ public class RabbitMqConsumerService : IMessagingConsumerService
         _logger = logger;
     }
 
-    public async Task SubscribeAsync<T>(string queueName, IMessageHandler<T> handler)
+    public async Task SubscribeAsync<T>(string queueName, IMessageHandler<T> handler) where T : class
     {
-        ArgumentNullException.ThrowIfNull(handler);
-
-        await _channel.QueueDeclareAsync(queue: queueName, durable: true, exclusive: false, autoDelete: false, arguments: null);
+        await _channel.QueueDeclareAsync(queueName, true, false, false, null);
         var consumer = new AsyncEventingBasicConsumer(_channel);
 
         consumer.ReceivedAsync += async (model, ea) =>
@@ -44,6 +42,7 @@ public class RabbitMqConsumerService : IMessagingConsumerService
             }
         };
 
-        await _channel.BasicConsumeAsync(queue: queueName, autoAck: true, consumer: consumer);
+        await _channel.BasicConsumeAsync(queueName, true, consumer);
+        _logger.LogInformation("Consumidor da fila {QueueName} iniciado", queueName);
     }
 }

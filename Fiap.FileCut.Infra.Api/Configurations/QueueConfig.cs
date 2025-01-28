@@ -36,7 +36,7 @@ public static class QueueConfig
             return this;
         }
 
-        private static async Task SubscribeQueue<T>(IServiceScope scope, string queueName)
+        private static async Task SubscribeQueue<T>(IServiceScope scope, string queueName) where T : class
         {
             var consumer = scope.ServiceProvider.GetRequiredService<IMessageHandler<T>>();
             var consumerService = scope.ServiceProvider.GetRequiredService<IMessagingConsumerService>();
