@@ -1,0 +1,95 @@
+apiVersion: v1
+kind: Secret
+metadata:
+  name: keycloak-db-secret
+type: Opaque
+data:
+  # Base64 encoded values of your database username, password, and connection details
+  db-host: cG9zdGdyZXM=  # e.g., 'your-postgres-hostname'
+  db-port: NTQzMg==  # e.g., '5432'
+  db-name: a2V5Y2xvYWs=  # e.g., 'keycloak'
+  db-user: cG9zdGdyZXM=  # e.g., 'keycloak-user'
+  db-password: cG9zdGdyZXM=  # e.g., 'keycloak-password'
+  kc-admin: YWRtaW4=
+  kc-admin-password: YWRtaW4=
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: keycloak
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: keycloak
+  template:
+    metadata:
+      labels:
+        app: keycloak
+    spec:
+      containers:
+        - name: keycloak
+          image: quay.io/keycloak/keycloak:25.0
+          env:
+            - name: KEYCLOAK_DB_VENDOR
+              value: POSTGRES
+            - name: KEYCLOAK_DB_ADDR
+              valueFrom:
+                secretKeyRef:
+                  name: keycloak-db-secret
+                  key: db-host
+            - name: KEYCLOAK_DB_PORT
+              valueFrom:
+                secretKeyRef:
+                  name: keycloak-db-secret
+                  key: db-port
+            - name: KEYCLOAK_DB_DATABASE
+              valueFrom:
+                secretKeyRef:
+                  name: keycloak-db-secret
+                  key: db-name
+            - name: KEYCLOAK_DB_USER
+              valueFrom:
+                secretKeyRef:
+                  name: keycloak-db-secret
+                  key: db-user
+            - name: KEYCLOAK_DB_PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  name: keycloak-db-secret
+                  key: db-password
+            - name: KEYCLOAK_ADMIN
+              valueFrom:
+                secretKeyRef:
+                  name: keycloak-db-secret
+                  key: kc-admin
+            - name: KEYCLOAK_ADMIN_PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  name: keycloak-db-secret
+                  key: kc-admin-password      
+          command: ["/opt/keycloak/bin/kc.sh", "start-dev"]
+          ports:
+            - containerPort: 8080
+              name: http
+          volumeMounts:
+            - name: keycloak-data
+              mountPath: /opt/keycloak/data
+      volumes:
+        - name: keycloak-data
+          emptyDir: {}
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: keycloak
+spec:
+  selector:
+    app: keycloak
+  ports:
+    - protocol: TCP
+      port: 8080
+      targetPort: 8080
+  type: ClusterIP
+
+
