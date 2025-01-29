@@ -1,6 +1,6 @@
 ﻿using Fiap.FileCut.Core.Adapters;
 using Fiap.FileCut.Core.Interfaces.Adapters;
-using Fiap.FileCut.Core.Interfaces.Factories;
+using Fiap.FileCut.Core.Interfaces.Handlers;
 using Fiap.FileCut.Core.Interfaces.Services;
 using Fiap.FileCut.Core.Services;
 using Microsoft.Extensions.Configuration;
@@ -31,7 +31,7 @@ public static class NotificationConfig
             if (SmtpConfigure(_services, configuration))
             {
                 _services.AddScoped<INotifyAdapter, EmailNotifyAdapter>();
-                _services.AddScoped<ISmtpClient, SmtpClientWrapper>();
+                _services.AddScoped<ISmtpHandler, SmtpClientWrapper>();
             }
             return this;
         }
@@ -75,7 +75,7 @@ public static class NotificationConfig
         }
     }
 
-    private sealed class SmtpClientWrapper(IOptions<SmtpProperties> smtpProperties) : ISmtpClient
+    private sealed class SmtpClientWrapper(IOptions<SmtpProperties> smtpProperties) : ISmtpHandler
     {
         private readonly SmtpProperties _smtpProperties = smtpProperties.Value;
 
