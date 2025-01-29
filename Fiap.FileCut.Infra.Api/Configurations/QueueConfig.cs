@@ -38,16 +38,23 @@ public static class QueueConfig
             where T : class
             where TImplementation : class, IMessageHandler<T>
         {
+            // TODO NOSONAR: Talvez criar um Attribute para definir o nome da fila no objeto colocando esse fullname coalesce
+            var queueName = typeof(T).FullName;
+            ArgumentNullException.ThrowIfNull(queueName);
+            return SubscribeQueue<T, TImplementation>(queueName);
+        }
+
+        public QueueBuilder SubscribeQueue<T, TImplementation>(string queueName)
+            where T : class
+            where TImplementation : class, IMessageHandler<T>
+        {
             _services.AddScoped<IMessageHandler<T>, TImplementation>();
-            queueActions.Add(SubscribeQueue<T>);
+            queueActions.Add(async (scope) => await SubscribeQueue<T>(scope, queueName));
             return this;
         }
 
-        private static async Task SubscribeQueue<T>(IServiceScope scope) where T : class
+        private static async Task SubscribeQueue<T>(IServiceScope scope, string queueName) where T : class
         {
-            // TODO NOSONAR: Talvez criar um Attribute para definir o nome da fila no objeto colocando esse fullname coalesce
-            var queueName = typeof(T).FullName; 
-            ArgumentNullException.ThrowIfNull(queueName);
             var consumer = scope.ServiceProvider.GetRequiredService<IMessageHandler<T>>();
             var consumerService = scope.ServiceProvider.GetRequiredService<IMessagingConsumerService>();
             await consumerService.SubscribeAsync(queueName, consumer);

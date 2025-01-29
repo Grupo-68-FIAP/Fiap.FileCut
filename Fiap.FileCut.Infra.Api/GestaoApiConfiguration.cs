@@ -23,7 +23,7 @@ public static class GestaoApiConfiguration
                 .EmailNotify(builder.Configuration);
         await builder.Services.AddQueue(cfg =>
         {
-            cfg.SubscribeQueue<string, TestHandler>();
+            cfg.SubscribeQueue<string, StatusUpdateHandler>();
         });
 
         builder.Services.AddScoped<IGestaoApplication, GestaoApplication>();
