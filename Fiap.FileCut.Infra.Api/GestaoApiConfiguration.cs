@@ -1,9 +1,8 @@
 ﻿using Fiap.FileCut.Core.Applications;
-using Fiap.FileCut.Core.Handler;
+using Fiap.FileCut.Core.Handlers;
 using Fiap.FileCut.Core.Interfaces.Applications;
 using Fiap.FileCut.Core.Interfaces.Repository;
 using Fiap.FileCut.Core.Interfaces.Services;
-using Fiap.FileCut.Core.Objects;
 using Fiap.FileCut.Core.Services;
 using Fiap.FileCut.Infra.Api.Configurations;
 using Fiap.FileCut.Infra.Storage.LocalDisk;

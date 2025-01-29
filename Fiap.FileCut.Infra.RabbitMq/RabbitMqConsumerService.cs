@@ -1,4 +1,4 @@
-﻿using Fiap.FileCut.Core.Interfaces.Handler;
+﻿using Fiap.FileCut.Core.Interfaces.Handlers;
 using Fiap.FileCut.Core.Interfaces.Services;
 using Fiap.FileCut.Core.Objects;
 using Microsoft.Extensions.Logging;

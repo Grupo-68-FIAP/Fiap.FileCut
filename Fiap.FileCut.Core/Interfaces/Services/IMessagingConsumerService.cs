@@ -1,4 +1,4 @@
-﻿using Fiap.FileCut.Core.Interfaces.Handler;
+﻿using Fiap.FileCut.Core.Interfaces.Handlers;
 
 namespace Fiap.FileCut.Core.Interfaces.Services;
 
