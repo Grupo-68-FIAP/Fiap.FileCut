@@ -11,17 +11,12 @@ namespace Fiap.FileCut.Infra.Api
             services.AddJwtBearerAuthentication();
             services.AddSwaggerFC();
             services.AddEnvCors();
-            //await services.AddQueue(cfg =>
-            //{
-            //    cfg.SubscribeQueue<string, TestHandler>("test-queue");
-            //});
 
             return Task.CompletedTask;
         }
 
         public static Task ScopedFileCutUploadApi(this IServiceScope scope)
         {
-            //await scope.UseQueue();
             return Task.CompletedTask;
         }
 
