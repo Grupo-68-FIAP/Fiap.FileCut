@@ -1,6 +1,8 @@
-﻿namespace Fiap.FileCut.Core.Interfaces.Handler;
+﻿using Fiap.FileCut.Core.Objects;
 
-public interface IMessageHandler<in T>
+namespace Fiap.FileCut.Core.Interfaces.Handler;
+
+public interface IMessageHandler<TContext> where TContext : class
 {
-    Task HandleAsync(T message);
+    Task HandleAsync(NotifyContext<TContext> context);
 }
