@@ -33,6 +33,25 @@ public class LocalDiskFileRepository : IFileRepository
 		}
 	}
 
+	public async Task<IList<string>> ListFileNamesAsync(Guid userId, CancellationToken cancellationToken = default)
+	{
+		if (userId == Guid.Empty)
+			throw new ArgumentException("User ID cannot be empty.", nameof(userId));
+
+		string userFolderPath = Path.Combine(_localStorageFolderPath, userId.ToString());
+
+		if (!Directory.Exists(userFolderPath))
+		{
+			return new List<string>();
+		}
+
+		var fileNames = Directory.GetFiles(userFolderPath)
+								 .Select(Path.GetFileName)
+								 .ToList();
+
+		return await Task.FromResult(fileNames);
+	}
+
 	public async Task<IList<IFormFile>> GetAllAsync(Guid userId, CancellationToken cancellationToken)
 	{
 		try

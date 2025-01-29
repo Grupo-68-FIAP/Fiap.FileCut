@@ -184,4 +184,44 @@ public class S3FileRepository : IFileRepository
 			throw;
 		}
 	}
+
+	public async Task<IList<string>> ListFileNamesAsync(Guid userId, CancellationToken cancellationToken = default)
+	{
+		try
+		{
+			_logger.LogInformation("[{source}] - Listing file names. User: {UserId}", nameof(S3FileRepository), userId);
+
+			var request = new ListObjectsV2Request
+			{
+				BucketName = _bucketName,
+				Prefix = $"{userId}/"
+			};
+
+			var response = await _s3Client.ListObjectsV2Async(request, cancellationToken);
+			if (response.S3Objects == null || !response.S3Objects.Any())
+			{
+				_logger.LogWarning("[{source}] - No files found for user {UserId}", nameof(S3FileRepository), userId);
+				return new List<string>();
+			}
+
+			var fileNames = response.S3Objects
+				.Select(obj => obj.Key.Replace($"{userId}/", ""))
+				.Where(name => !string.IsNullOrEmpty(name))
+				.ToList();
+
+			_logger.LogInformation("[{source}] - Found {FileCount} files for user {UserId}", nameof(S3FileRepository), fileNames.Count, userId);
+
+			return fileNames;
+		}
+		catch (AmazonS3Exception s3Ex)
+		{
+			_logger.LogError(s3Ex, "[{source}] - AWS S3 error while listing file names. User: {UserId}", nameof(S3FileRepository), userId);
+			throw new FileRepositoryException("Error listing file names from S3.", s3Ex);
+		}
+		catch (Exception ex)
+		{
+			_logger.LogError(ex, "[{source}] - Unexpected error while listing file names. User: {UserId}", nameof(S3FileRepository), userId);
+			throw;
+		}
+	}
 }

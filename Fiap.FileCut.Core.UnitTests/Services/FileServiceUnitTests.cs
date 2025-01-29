@@ -2,6 +2,7 @@
 using Fiap.FileCut.Core.Services;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Http.Internal;
+using Microsoft.Extensions.Logging;
 using Moq;
 using System;
 using System.Collections.Generic;
@@ -19,9 +20,11 @@ public class FileServiceUnitTests
         // Arrange
         var userId = Guid.NewGuid();
         var fileRepositoryMock = new Mock<IFileRepository>();
-        var fileService = new FileService(fileRepositoryMock.Object);
+        var _logger = new Mock<ILogger<FileService>>(); 
+
+		var fileService = new FileService(fileRepositoryMock.Object, _logger.Object);
         // Act
-        _ = await Assert.ThrowsAsync<NotImplementedException>(async () => await fileService.GetAllFilesName(userId));
+        _ = await Assert.ThrowsAsync<NotImplementedException>(async () => await fileService.GetFileNamesAsync(userId, CancellationToken.None));
         // TODO NOSONAR: Implementar o teste corretamente
     }
 }

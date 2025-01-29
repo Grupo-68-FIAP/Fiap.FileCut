@@ -16,7 +16,7 @@ public class GestaoApplicationUnitTests
         var guid = Guid.NewGuid();
         var videoName = "video.mp4";
         var formFile = new Mock<IFormFile>();
-        fileService.Setup(x => x.GetFileAsync(guid, videoName)).ReturnsAsync(formFile.Object);
+        fileService.Setup(x => x.GetFileAsync(guid, videoName, CancellationToken.None)).ReturnsAsync(formFile.Object);
         // Act
         var result = await gestaoApplication.GetVideoAsync(guid, videoName);
         // Assert
@@ -33,7 +33,7 @@ public class GestaoApplicationUnitTests
         var videoName = "video.mp4";
         var formFile = new Mock<IFormFile>();
         formFile.Setup(x => x.FileName).Returns(videoName);
-        fileService.Setup(x => x.GetFileAsync(guid, videoName)).ReturnsAsync(formFile.Object);
+        fileService.Setup(x => x.GetFileAsync(guid, videoName, CancellationToken.None)).ReturnsAsync(formFile.Object);
         // Act
         var result = await gestaoApplication.GetVideoMetadataAsync(guid, videoName);
         // Assert
@@ -51,8 +51,8 @@ public class GestaoApplicationUnitTests
         var videoName = "video.mp4";
         var formFile = new Mock<IFormFile>();
         formFile.Setup(x => x.FileName).Returns(videoName);
-        fileService.Setup(x => x.GetAllFilesName(guid)).ReturnsAsync([videoName]);
-        fileService.Setup(x => x.GetFileAsync(guid, videoName)).ReturnsAsync(formFile.Object);
+        fileService.Setup(x => x.GetFileNamesAsync(guid, CancellationToken.None)).ReturnsAsync([videoName]);
+        fileService.Setup(x => x.GetFileAsync(guid, videoName, CancellationToken.None)).ReturnsAsync(formFile.Object);
         // Act
         var result = await gestaoApplication.ListAllVideosAsync(guid);
         // Assert
@@ -68,7 +68,7 @@ public class GestaoApplicationUnitTests
         var fileService = new Mock<IFileService>();
         var gestaoApplication = new GestaoApplication(fileService.Object);
         var guid = Guid.NewGuid();
-        fileService.Setup(x => x.GetAllFilesName(guid)).ReturnsAsync([]);
+        fileService.Setup(x => x.GetFileNamesAsync(guid, CancellationToken.None)).ReturnsAsync([]);
         // Act
         var result = await gestaoApplication.ListAllVideosAsync(guid);
         // Assert

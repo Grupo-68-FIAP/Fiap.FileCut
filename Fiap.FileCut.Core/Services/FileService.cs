@@ -55,6 +55,26 @@ public class FileService : IFileService
 		}
 	}
 
+	public async Task<IList<string>> GetFileNamesAsync(Guid userId, CancellationToken cancellationToken)
+	{
+		try
+		{
+			_logger.LogInformation("[{source}] - Starting file name listing. User: {UserId}", nameof(FileService), userId);
+
+			var files = await _fileRepository.GetAllAsync(userId, cancellationToken);
+			var fileNames = files.Select(file => file.FileName).ToList();
+
+			_logger.LogInformation("[{source}] - Successfully listed {FileCount} file names for user {UserId}", nameof(FileService), fileNames.Count, userId);
+
+			return fileNames;
+		}
+		catch (Exception ex)
+		{
+			_logger.LogError(ex, "[{source}] - Error while listing file names. User: {UserId}", nameof(FileService), userId);
+			throw;
+		}
+	}
+
 	public async Task<bool> SaveFileAsync(Guid userId, IFormFile file, CancellationToken cancellationToken)
 	{
 		try
