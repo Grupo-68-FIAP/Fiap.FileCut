@@ -1,5 +1,5 @@
 ﻿using Fiap.FileCut.Core.Adapters;
-using Fiap.FileCut.Core.Interfaces.Handler;
+using Fiap.FileCut.Core.Interfaces.Handlers;
 using Fiap.FileCut.Core.Objects;
 using Microsoft.Extensions.Logging;
 using Moq;

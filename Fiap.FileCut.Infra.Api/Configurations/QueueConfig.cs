@@ -1,5 +1,6 @@
-﻿using Fiap.FileCut.Core.Interfaces.Handler;
+﻿using Fiap.FileCut.Core.Interfaces.Handlers;
 using Fiap.FileCut.Core.Interfaces.Services;
+using Fiap.FileCut.Core.Objects;
 using Fiap.FileCut.Infra.RabbitMq;
 using Microsoft.Extensions.DependencyInjection;
 using RabbitMQ.Client;
@@ -33,12 +34,22 @@ public static class QueueConfig
     {
         private readonly IServiceCollection _services = services;
 
+        public QueueBuilder SubscribeQueue<T, TImplementation>()
+            where T : class
+            where TImplementation : class, IMessageHandler<T>
+        {
+            // TODO NOSONAR: Talvez criar um Attribute para definir o nome da fila no objeto colocando esse fullname coalesce
+            var queueName = typeof(T).FullName;
+            ArgumentNullException.ThrowIfNull(queueName);
+            return SubscribeQueue<T, TImplementation>(queueName);
+        }
+
         public QueueBuilder SubscribeQueue<T, TImplementation>(string queueName)
             where T : class
             where TImplementation : class, IMessageHandler<T>
         {
             _services.AddScoped<IMessageHandler<T>, TImplementation>();
-            queueActions.Add(async scope => await SubscribeQueue<T>(scope, queueName));
+            queueActions.Add(async (scope) => await SubscribeQueue<T>(scope, queueName));
             return this;
         }
 

@@ -1,6 +1,6 @@
 ﻿using System.Net.Mail;
 
-namespace Fiap.FileCut.Core.Interfaces.Handler;
+namespace Fiap.FileCut.Core.Interfaces.Handlers;
 
 /// <summary>
 /// SMTP client.

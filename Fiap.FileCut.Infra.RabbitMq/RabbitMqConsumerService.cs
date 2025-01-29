@@ -1,8 +1,10 @@
-﻿using Fiap.FileCut.Core.Interfaces.Handler;
+﻿using Fiap.FileCut.Core.Interfaces.Handlers;
 using Fiap.FileCut.Core.Interfaces.Services;
+using Fiap.FileCut.Core.Objects;
 using Microsoft.Extensions.Logging;
 using RabbitMQ.Client;
 using RabbitMQ.Client.Events;
+using System.Text;
 using System.Text.Json;
 
 namespace Fiap.FileCut.Infra.RabbitMq;
@@ -29,11 +31,13 @@ public class RabbitMqConsumerService : IMessagingConsumerService
             {
                 _logger.LogDebug("Mensagem recebida da fila {QueueName}", queueName);
                 var body = ea.Body.ToArray();
+                var userId = GetUserId(ea);
                 var message = JsonSerializer.Deserialize<T>(body);
 
                 if (message != null)
                 {
-                    await handler.HandleAsync(message);
+                    var context = new NotifyContext<T>(message, userId);
+                    await handler.HandleAsync(context);
                 }
             }
             catch (Exception ex)
@@ -44,5 +48,14 @@ public class RabbitMqConsumerService : IMessagingConsumerService
 
         await _channel.BasicConsumeAsync(queueName, true, consumer);
         _logger.LogInformation("Consumidor da fila {QueueName} iniciado", queueName);
+    }
+
+    private static Guid GetUserId(BasicDeliverEventArgs ea)
+    {
+        var byteId = ea.BasicProperties.Headers?["UserID"] as byte[]
+            ?? throw new MissingMemberException("Cabeçalho 'UserID' não encontrado na mensagem");
+        var userId = Encoding.UTF8.GetString(byteId);
+        ArgumentNullException.ThrowIfNull(userId);
+        return new Guid(userId);
     }
 }
