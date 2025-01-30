@@ -2,8 +2,10 @@
 using Fiap.FileCut.Core.Interfaces.Services;
 using Fiap.FileCut.Core.Objects;
 using Fiap.FileCut.Infra.RabbitMq;
+using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using RabbitMQ.Client;
+using static Fiap.FileCut.Infra.Api.Configurations.NotificationConfig;
 
 namespace Fiap.FileCut.Infra.Api.Configurations;
 
@@ -15,6 +17,7 @@ public static class QueueConfig
 
     private static readonly List<Func<IServiceScope, Task>> queueActions = [];
 
+    #region Consumers
     public static async Task AddQueue(this IServiceCollection services, Action<QueueBuilder> conf)
     {
         var connectionString = Environment.GetEnvironmentVariable("RABBITMQ_CONNECTION_STRING");
@@ -68,4 +71,17 @@ public static class QueueConfig
             await action(scope);
         }
     }
+    #endregion Consumers
+
+    #region Publishers
+    public static async Task AddQueuePublisher(this IServiceCollection services, Action<QueueBuilder> conf)
+    {
+        var openIdAuthority = Environment.GetEnvironmentVariable("RABBITMQ_CONNECTION_STRING");
+        ArgumentNullException.ThrowIfNull(openIdAuthority);
+        await services.AddRabbitMQ(openIdAuthority);
+        services.AddScoped<IMessagingPublisherService, RabbitMqPublisherService>();
+        conf(new QueueBuilder(services));
+    }
+
+    #endregion Publishers
 }
