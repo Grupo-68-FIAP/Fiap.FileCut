@@ -1,24 +1,23 @@
-﻿using Amazon.S3;
-using Amazon.Runtime;
-using Microsoft.Extensions.DependencyInjection;
-using Microsoft.Extensions.Configuration;
-using Microsoft.Extensions.Options;
-using Fiap.FileCut.Infra.Storage.S3;
+﻿using Amazon.Runtime;
+using Amazon.S3;
 using Fiap.FileCut.Core.Interfaces.Repository;
-using Fiap.FileCut.Infra.Storage.Shared.Configs;
+using Fiap.FileCut.Infra.Api.Configurations;
+using Fiap.FileCut.Infra.Storage.S3;
+using Microsoft.Extensions.Configuration;
+using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Options;
 
 namespace Fiap.FileCut.Infra.Storage.Shared.Extensions
 {
-	//TODO - VALIDAR SE VAI FICAR NO CORE OU NO SERVIÇO QUE USAR
-	public static class S3ServiceExtensions
+	public static class S3ServiceConfiguration
 	{
 		public static IServiceCollection AddS3Services(this IServiceCollection services, IConfiguration configuration)
 		{
-			//services.Configure<S3Settings>(configuration.GetSection("AWS"));
+			services.Configure<S3Config>(configuration.GetSection("AWS"));
 
 			services.AddSingleton<IAmazonS3>(sp =>
 			{
-				var s3Settings = sp.GetRequiredService<IOptions<S3Settings>>().Value;
+				var s3Settings = sp.GetRequiredService<IOptions<S3Config>>().Value;
 
 				return new AmazonS3Client(
 					new BasicAWSCredentials(s3Settings.AccessKey, s3Settings.SecretKey),
