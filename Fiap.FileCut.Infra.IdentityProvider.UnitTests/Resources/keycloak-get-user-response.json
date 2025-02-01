@@ -1,0 +1,21 @@
+{
+  "id": "9b5199a0-7436-4168-80b3-6966ef60c1f2",
+  "createdTimestamp": 1738382286410,
+  "username": "admin@test.com",
+  "enabled": true,
+  "totp": false,
+  "emailVerified": false,
+  "firstName": "Admin",
+  "lastName": "Test",
+  "email": "admin@test.com",
+  "disableableCredentialTypes": [],
+  "requiredActions": [],
+  "notBefore": 0,
+  "access": {
+    "manageGroupMembership": true,
+    "view": true,
+    "mapRoles": true,
+    "impersonate": false,
+    "manage": true
+  }
+}

@@ -1,68 +1,28 @@
 ﻿using Fiap.FileCut.Core.Interfaces.Repository;
 using Fiap.FileCut.Core.Objects;
 using Fiap.FileCut.Infra.IdentityProvider.Keycloak.Objects;
-using Microsoft.AspNetCore.Http;
-using System.Net.Http.Headers;
+using Microsoft.Extensions.Caching.Memory;
 using System.Net.Http.Json;
 
 namespace Fiap.FileCut.Infra.IdentityProvider.Keycloak;
 
-public partial class KeycloakUserRepository : IUserRepository
+public class KeycloakUserRepository(
+    IMemoryCache memoryCache,
+    KeycloakConfiguration configuration,
+    IHttpClientFactory httpClientFactory) : OidcRepository(httpClientFactory, configuration, memoryCache), IUserRepository
 {
-    public readonly HttpClient _httpClient;
-    private readonly IHttpContextAccessor _httpContextAccessor;
-
-
-    public KeycloakUserRepository(
-        KeycloakConfiguration configuration, 
-        IHttpClientFactory httpClientFactory, 
-        IHttpContextAccessor httpContextAccessor)
-    {
-        _httpClient = httpClientFactory.CreateClient();
-        _httpClient.BaseAddress = new Uri(configuration.KeycloakUrl);
-        _httpClient.DefaultRequestHeaders.Accept.Add(new MediaTypeWithQualityHeaderValue("application/json"));
-
-        _httpContextAccessor = httpContextAccessor;
-    }
-
-    private AuthenticationHeaderValue GetAuthorizationBearerToken()
-    {
-        // Recuperar o token do contexto HTTP (assim como o JwtBearer)
-        var token = _httpContextAccessor.HttpContext?.Request.Headers["Authorization"].ToString()?.Replace("Bearer ", "");
-
-        if (string.IsNullOrEmpty(token))
-            throw new UnauthorizedAccessException("Token de autenticação não encontrado.");
-
-        return new AuthenticationHeaderValue("Bearer", token);
-    }
+    private readonly string KEYCLOAK_GET_USER_URL = $"admin/realms/{configuration.Realm}/users";
 
     public async Task<User?> GetUserAsync(Guid id, CancellationToken cancellationToken = default)
     {
-        var endpoint = $"admin/realms/sample/users/{id}";
+        var httpClient = await GetHttpClient(cancellationToken);
+        var response = await httpClient.GetAsync($"{KEYCLOAK_GET_USER_URL}/{id}", cancellationToken);
 
-        _httpClient.DefaultRequestHeaders.Authorization = GetAuthorizationBearerToken();
-        var response = await _httpClient.GetAsync(endpoint, cancellationToken);
         if (!response.IsSuccessStatusCode)
-        {
             return null;
-        }
+
         var user = await response.Content.ReadFromJsonAsync<KeycloakUser>(cancellationToken: cancellationToken);
         return ParseUser(user);
-    }
-
-    public Task<User> CreateUserAsync(User user, CancellationToken cancellationToken = default)
-    {
-        throw new NotImplementedException();
-    }
-
-    public Task DeleteUserAsync(Guid id, CancellationToken cancellationToken = default)
-    {
-        throw new NotImplementedException();
-    }
-
-    public Task<User> UpdateUserAsync(User user, CancellationToken cancellationToken = default)
-    {
-        throw new NotImplementedException();
     }
 
     private static User ParseUser(KeycloakUser user)
