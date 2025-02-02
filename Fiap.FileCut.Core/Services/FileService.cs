@@ -35,8 +35,7 @@ public class FileService : IFileService
 		}
 		catch (Exception ex)
 		{
-			const string errorMessageTemplate = "[{ClassName}] - Error deleting file. User: {UserId}, File: {FileName}";
-			var errorMessage = string.Format(errorMessageTemplate, nameof(FileService), userId, fileName);
+			var errorMessage = $"[{nameof(FileService)}] - Error deleting file. User: {userId}, File: {fileName}";
 			_logger.LogError(ex, errorMessage);
 			throw new InvalidOperationException(errorMessage, ex);
 		}
@@ -54,9 +53,8 @@ public class FileService : IFileService
 		catch (Exception ex)
 		{
 			const string errorMessageTemplate = "[{Source}] - Error while getting the file. User: {UserId}, File: {FileName}";
-			var errorMessage = string.Format(errorMessageTemplate, nameof(FileService), userId, fileName);
-			_logger.LogError(ex, errorMessage);
-			throw new InvalidOperationException(errorMessage, ex);
+			_logger.LogError(ex, errorMessageTemplate, nameof(FileService), userId, fileName);
+			throw new InvalidOperationException($"[{nameof(FileService)}] - Error while getting the file. User: {userId}, File: {fileName}", ex);
 		}
 	}
 
@@ -78,9 +76,8 @@ public class FileService : IFileService
 		catch (Exception ex)
 		{
 			const string errorMessageTemplate = "[{Source}] - Error while listing file names. User: {UserId}";
-			var errorMessage = string.Format(errorMessageTemplate, nameof(FileService), userId);
-			_logger.LogError(ex, errorMessage);
-			throw new InvalidOperationException(errorMessage, ex); 
+			_logger.LogError(ex, errorMessageTemplate, nameof(FileService), userId);
+			throw new InvalidOperationException($"[{nameof(FileService)}] - Error while listing file names. User: {userId}", ex);
 		}
 	}
 
@@ -120,9 +117,8 @@ public class FileService : IFileService
 		catch (Exception ex)
 		{
 			const string errorMessageTemplate = "[{Source}] - Unexpected error while saving file. User: {UserId}, File: {FileName}";
-			var errorMessage = string.Format(errorMessageTemplate, nameof(FileService), userId, file.FileName);
-			_logger.LogError(ex, errorMessage);
-			throw new InvalidOperationException(errorMessage, ex); 
+			_logger.LogError(ex, errorMessageTemplate, nameof(FileService), userId, file.FileName);
+			throw new InvalidOperationException($"[{nameof(FileService)}] - Unexpected error while saving file. User: {userId}, File: {file.FileName}", ex);
 		}
 	}
 }

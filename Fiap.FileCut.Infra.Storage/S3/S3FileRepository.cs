@@ -13,7 +13,7 @@ public class S3FileRepository : IFileRepository
 	private readonly IAmazonS3 _s3Client;
 	private readonly string _bucketName;
 	private readonly ILogger<S3FileRepository> _logger;
-	private readonly S3Helper _s3Helper; 
+	private readonly S3Helper _s3Helper;
 
 	public S3FileRepository(IAmazonS3 s3Client, string bucketName, ILogger<S3FileRepository> logger, S3Helper s3Helper)
 	{
@@ -27,7 +27,7 @@ public class S3FileRepository : IFileRepository
 	{
 		try
 		{
-			ArgumentNullException.ThrowIfNull(fileName);  // Lançar exceção de argumento nulo se fileName for nulo
+			ArgumentNullException.ThrowIfNull(fileName);
 
 			if (!FileHelper.IsValidFileName(fileName))
 			{
@@ -51,12 +51,12 @@ public class S3FileRepository : IFileRepository
 		catch (AmazonS3Exception s3Ex)
 		{
 			_logger.LogError(s3Ex, "[{source}] - AWS S3 error while downloading file. User: {UserId}, File: {FileName}", nameof(S3FileRepository), userId, fileName);
-			throw new FileRepositoryException("Error downloading file from S3.", s3Ex);
+			throw new FileRepositoryException($"Error downloading file '{fileName}' from S3 for user '{userId}'.", s3Ex);
 		}
 		catch (Exception ex)
 		{
 			_logger.LogError(ex, "[{source}] - Unexpected error while downloading file. User: {UserId}, File: {FileName}", nameof(S3FileRepository), userId, fileName);
-			throw new InvalidOperationException($"Unexpected error while downloading file {fileName} for user {userId}.", ex);
+			throw new InvalidOperationException($"Unexpected error while downloading file '{fileName}' for user '{userId}'.", ex);
 		}
 	}
 
@@ -96,12 +96,12 @@ public class S3FileRepository : IFileRepository
 		catch (AmazonS3Exception s3Ex)
 		{
 			_logger.LogError(s3Ex, "[{source}] - AWS S3 error while listing files. User: {UserId}", nameof(S3FileRepository), userId);
-			throw new FileRepositoryException("Error listing files from S3.", s3Ex);
+			throw new FileRepositoryException($"Error listing files from S3 for user '{userId}'.", s3Ex);
 		}
 		catch (Exception ex)
 		{
 			_logger.LogError(ex, "[{source}] - Unexpected error while listing files. User: {UserId}", nameof(S3FileRepository), userId);
-			throw new InvalidOperationException($"Unexpected error while listing files for user {userId}.", ex);
+			throw new InvalidOperationException($"Unexpected error while listing files for user '{userId}'.", ex);
 		}
 	}
 
@@ -117,7 +117,7 @@ public class S3FileRepository : IFileRepository
 
 			_logger.LogInformation("[{source}] - Starting file upload/update. User: {UserId}, File: {FileName}", nameof(S3FileRepository), userId, file.FileName);
 
-			var key = _s3Helper.GetS3Key(userId, file.FileName);
+			var key = S3Helper.GetS3Key(userId, file.FileName);
 			using var stream = file.OpenReadStream();
 
 			var request = new PutObjectRequest
@@ -140,19 +140,17 @@ public class S3FileRepository : IFileRepository
 		}
 		catch (AmazonS3Exception s3Ex)
 		{
-			var errorMessage = $"[{nameof(S3FileRepository)}] - AWS S3 error while uploading/updating file. User: {userId}, File: {file.FileName}";
-			_logger.LogError(s3Ex, errorMessage);
-			throw new FileRepositoryException(errorMessage, s3Ex);
+			_logger.LogError(s3Ex, "[{source}] - AWS S3 error while uploading/updating file. User: {UserId}, File: {FileName}", nameof(S3FileRepository), userId, file.FileName);
+			throw new FileRepositoryException($"AWS S3 error while uploading/updating file '{file.FileName}' for user '{userId}'.", s3Ex);
 		}
 		catch (Exception ex)
 		{
-			var errorMessage = $"[{nameof(S3FileRepository)}] - Unexpected error while uploading/updating file. User: {userId}, File: {file.FileName}";
-			_logger.LogError(ex, errorMessage);
-			throw new InvalidOperationException(errorMessage, ex);
+			_logger.LogError(ex, "[{source}] - Unexpected error while uploading/updating file. User: {UserId}, File: {FileName}", nameof(S3FileRepository), userId, file.FileName);
+			throw new InvalidOperationException($"Unexpected error while uploading/updating file '{file.FileName}' for user '{userId}'.", ex);
 		}
 	}
 
-	public async Task<bool> DeleteAsync(Guid userId, string fileName, CancellationToken cancellationToken = default)
+	public async Task<bool> DeleteAsync(Guid userId, string fileName, CancellationToken cancellationToken)
 	{
 		try
 		{
@@ -164,7 +162,7 @@ public class S3FileRepository : IFileRepository
 
 			_logger.LogInformation("[{source}] - Starting file deletion. User: {UserId}, File: {FileName}", nameof(S3FileRepository), userId, fileName);
 
-			var key = _s3Helper.GetS3Key(userId, fileName);
+			var key = S3Helper.GetS3Key(userId, fileName);
 			var request = new DeleteObjectRequest
 			{
 				BucketName = _bucketName,
@@ -184,12 +182,17 @@ public class S3FileRepository : IFileRepository
 		catch (AmazonS3Exception s3Ex)
 		{
 			_logger.LogError(s3Ex, "[{source}] - AWS S3 error while deleting file. User: {UserId}, File: {FileName}", nameof(S3FileRepository), userId, fileName);
-			throw new FileRepositoryException("Error deleting file from S3.", s3Ex);
+			throw new FileRepositoryException("Error deleting file from S3. Please check the AWS S3 service.", s3Ex);
+		}
+		catch (ArgumentException argEx)
+		{
+			_logger.LogWarning(argEx, "[{source}] - Invalid file name. User: {UserId}, File: {FileName}", nameof(S3FileRepository), userId, fileName);
+			throw; 
 		}
 		catch (Exception ex)
 		{
 			_logger.LogError(ex, "[{source}] - Unexpected error while deleting file. User: {UserId}, File: {FileName}", nameof(S3FileRepository), userId, fileName);
-			throw;
+			throw new FileRepositoryException("An unexpected error occurred while deleting the file. Please try again later.", ex);
 		}
 	}
 
@@ -224,14 +227,14 @@ public class S3FileRepository : IFileRepository
 		catch (AmazonS3Exception s3Ex)
 		{
 			_logger.LogError(s3Ex, "[{source}] - AWS S3 error while listing file names. User: {UserId}", nameof(S3FileRepository), userId);
-			throw new FileRepositoryException("Error listing file names from S3.", s3Ex);
+			throw new FileRepositoryException("Error listing file names from S3. Please check the AWS S3 service.", s3Ex);
 		}
 		catch (Exception ex)
 		{
 			const string errorMessageTemplate = "[{source}] - Unexpected error while listing file names. User: {UserId}. Error: {ErrorMessage}";
 			var errorMessage = string.Format(errorMessageTemplate, nameof(S3FileRepository), userId, ex.Message);
 			_logger.LogError(ex, errorMessage);
-			throw new InvalidOperationException(errorMessage, ex); 
+			throw new InvalidOperationException("An unexpected error occurred while listing the files. Please try again later.", ex);
 		}
 	}
 }

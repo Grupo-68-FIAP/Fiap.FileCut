@@ -26,7 +26,7 @@ namespace Fiap.FileCut.Infra.Storage.Shared.Helpers
 			return await _s3Client.GetObjectAsync(request, cancellationToken);
 		}
 
-		public string GetS3Key(Guid userId, string fileName)
+		public static string GetS3Key(Guid userId, string fileName)
 		{
 			return Path.Combine(userId.ToString(), fileName).Replace("\\", "/");
 		}

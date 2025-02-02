@@ -49,9 +49,10 @@ public class LocalDiskFileRepository : IFileRepository
 		var fileNames = Directory.GetFiles(userFolderPath)
 								 .Select(Path.GetFileName)
 								 .Where(name => !string.IsNullOrEmpty(name))
+								 .Select(name => name!) 
 								 .ToList();
 
-		return await Task.FromResult(fileNames);
+		return await Task.FromResult<IList<string>>(fileNames);
 	}
 
 	public async Task<IList<IFormFile>> GetAllAsync(Guid userId, CancellationToken cancellationToken)
