@@ -22,14 +22,14 @@ public class FileService : IFileService
 	{
 		try
 		{
-			_logger.LogInformation("[{source}] - Starting file deletion. User: {UserId}, File: {FileName}", nameof(FileService), userId, fileName);
+			_logger.LogInformation("[{Source}] - Starting file deletion. User: {UserId}, File: {FileName}", nameof(FileService), userId, fileName);
 
 			var result = await _fileRepository.DeleteAsync(userId, fileName, cancellationToken);
 
 			if (result)
-				_logger.LogInformation("[{source}] - File deleted successfully. User: {UserId}, File: {FileName}", nameof(FileService), userId, fileName);
+				_logger.LogInformation("[{Source}] - File deleted successfully. User: {UserId}, File: {FileName}", nameof(FileService), userId, fileName);
 			else
-				_logger.LogWarning("[{source}] - Failed to delete file. User: {UserId}, File: {FileName}", nameof(FileService), userId, fileName);
+				_logger.LogWarning("[{Source}] - Failed to delete file. User: {UserId}, File: {FileName}", nameof(FileService), userId, fileName);
 
 			return result;
 		}
@@ -38,7 +38,7 @@ public class FileService : IFileService
 			const string errorMessageTemplate = "[{ClassName}] - Error deleting file. User: {UserId}, File: {FileName}";
 			var errorMessage = string.Format(errorMessageTemplate, nameof(FileService), userId, fileName);
 			_logger.LogError(ex, errorMessage);
-			throw new ApplicationException(errorMessage, ex);
+			throw new InvalidOperationException(errorMessage, ex);
 		}
 	}
 
@@ -56,7 +56,7 @@ public class FileService : IFileService
 			const string errorMessageTemplate = "[{Source}] - Error while getting the file. User: {UserId}, File: {FileName}";
 			var errorMessage = string.Format(errorMessageTemplate, nameof(FileService), userId, fileName);
 			_logger.LogError(ex, errorMessage);
-			throw new ApplicationException(errorMessage, ex);
+			throw new InvalidOperationException(errorMessage, ex);
 		}
 	}
 
@@ -80,7 +80,7 @@ public class FileService : IFileService
 			const string errorMessageTemplate = "[{Source}] - Error while listing file names. User: {UserId}";
 			var errorMessage = string.Format(errorMessageTemplate, nameof(FileService), userId);
 			_logger.LogError(ex, errorMessage);
-			throw new ApplicationException(errorMessage, ex);
+			throw new InvalidOperationException(errorMessage, ex); 
 		}
 	}
 
@@ -114,15 +114,15 @@ public class FileService : IFileService
 		catch (ArgumentException ex)
 		{
 			const string warningMessageTemplate = "[{Source}] - Validation error while saving file. User: {UserId}, File: {FileName}";
-			_logger.LogWarning(ex, warningMessageTemplate, nameof(FileService), userId, file?.FileName);
-			throw;
+			_logger.LogWarning(ex, warningMessageTemplate, nameof(FileService), userId, file.FileName);
+			throw new InvalidOperationException("Validation error occurred while saving the file.", ex);
 		}
 		catch (Exception ex)
 		{
 			const string errorMessageTemplate = "[{Source}] - Unexpected error while saving file. User: {UserId}, File: {FileName}";
-			var errorMessage = string.Format(errorMessageTemplate, nameof(FileService), userId, file?.FileName);
+			var errorMessage = string.Format(errorMessageTemplate, nameof(FileService), userId, file.FileName);
 			_logger.LogError(ex, errorMessage);
-			throw new ApplicationException(errorMessage, ex);
+			throw new InvalidOperationException(errorMessage, ex); 
 		}
 	}
 }

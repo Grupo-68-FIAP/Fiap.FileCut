@@ -64,7 +64,7 @@ public class S3FileRepository : IFileRepository
 	{
 		try
 		{
-			ArgumentNullException.ThrowIfNull(userId); 
+			ArgumentNullException.ThrowIfNull(userId);
 
 			_logger.LogInformation("[{source}] - Starting file listing. User: {UserId}", nameof(S3FileRepository), userId);
 
@@ -85,7 +85,9 @@ public class S3FileRepository : IFileRepository
 			foreach (var obj in response.S3Objects)
 			{
 				var fileName = obj.Key.Replace($"{userId}/", "");
-				files.Add(await GetAsync(userId, fileName, cancellationToken));
+				var file = await GetAsync(userId, fileName, cancellationToken);
+				if (file != null)
+					files.Add(file);
 			}
 
 			_logger.LogInformation("[{source}] - Successfully listed {FileCount} files for user {UserId}", nameof(S3FileRepository), files.Count, userId);
@@ -103,14 +105,14 @@ public class S3FileRepository : IFileRepository
 		}
 	}
 
-	public async Task<bool> UpdateAsync(Guid userId, IFormFile file, CancellationToken cancellationToken = default)
+	public async Task<bool> UpdateAsync(Guid userId, IFormFile file, CancellationToken cancellationToken)
 	{
 		try
 		{
 			if (!FileHelper.IsValidFileName(file.FileName))
 			{
 				_logger.LogWarning("[{source}] - Invalid file name: {FileName}", nameof(S3FileRepository), file.FileName);
-				throw new ArgumentException("Invalid file name.", nameof(file.FileName));
+				throw new ArgumentException("Invalid file name.", nameof(file));
 			}
 
 			_logger.LogInformation("[{source}] - Starting file upload/update. User: {UserId}, File: {FileName}", nameof(S3FileRepository), userId, file.FileName);
@@ -138,13 +140,15 @@ public class S3FileRepository : IFileRepository
 		}
 		catch (AmazonS3Exception s3Ex)
 		{
-			_logger.LogError(s3Ex, "[{source}] - AWS S3 error while uploading/updating file. User: {UserId}, File: {FileName}", nameof(S3FileRepository), userId, file.FileName);
-			throw new FileRepositoryException("Error uploading file to S3.", s3Ex);
+			var errorMessage = $"[{nameof(S3FileRepository)}] - AWS S3 error while uploading/updating file. User: {userId}, File: {file.FileName}";
+			_logger.LogError(s3Ex, errorMessage);
+			throw new FileRepositoryException(errorMessage, s3Ex);
 		}
 		catch (Exception ex)
 		{
-			_logger.LogError(ex, "[{source}] - Unexpected error while uploading/updating file. User: {UserId}, File: {FileName}", nameof(S3FileRepository), userId, file.FileName);
-			throw;
+			var errorMessage = $"[{nameof(S3FileRepository)}] - Unexpected error while uploading/updating file. User: {userId}, File: {file.FileName}";
+			_logger.LogError(ex, errorMessage);
+			throw new InvalidOperationException(errorMessage, ex);
 		}
 	}
 
@@ -202,7 +206,7 @@ public class S3FileRepository : IFileRepository
 			};
 
 			var response = await _s3Client.ListObjectsV2Async(request, cancellationToken);
-			if (response.S3Objects == null || !response.S3Objects.Any())
+			if (response.S3Objects == null || response.S3Objects.Count == 0)
 			{
 				_logger.LogWarning("[{source}] - No files found for user {UserId}", nameof(S3FileRepository), userId);
 				return new List<string>();
@@ -224,8 +228,10 @@ public class S3FileRepository : IFileRepository
 		}
 		catch (Exception ex)
 		{
-			_logger.LogError(ex, "[{source}] - Unexpected error while listing file names. User: {UserId}", nameof(S3FileRepository), userId);
-			throw;
+			const string errorMessageTemplate = "[{source}] - Unexpected error while listing file names. User: {UserId}. Error: {ErrorMessage}";
+			var errorMessage = string.Format(errorMessageTemplate, nameof(S3FileRepository), userId, ex.Message);
+			_logger.LogError(ex, errorMessage);
+			throw new InvalidOperationException(errorMessage, ex); 
 		}
 	}
 }

@@ -49,7 +49,7 @@ public class LocalDiskFileRepository : IFileRepository
 		var fileNames = Directory.GetFiles(userFolderPath)
 								 .Select(Path.GetFileName)
 								 .Where(name => !string.IsNullOrEmpty(name))
-								 .ToList()!; 
+								 .ToList();
 
 		return await Task.FromResult(fileNames);
 	}
