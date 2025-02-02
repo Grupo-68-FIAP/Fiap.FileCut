@@ -1,11 +1,11 @@
 ﻿using System.Net.Mail;
 
-namespace Fiap.FileCut.Core.Interfaces.Factories;
+namespace Fiap.FileCut.Core.Interfaces.Handlers;
 
 /// <summary>
 /// SMTP client.
 /// </summary>
-public interface ISmtpClient
+public interface ISmtpHandler
 {
     /// <summary>
     /// Get server email address.
