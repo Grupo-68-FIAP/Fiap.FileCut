@@ -35,7 +35,8 @@ public class FileService : IFileService
 		}
 		catch (Exception ex)
 		{
-			var errorMessage = $"[{nameof(FileService)}] - Error deleting file. User: {userId}, File: {fileName}";
+			const string errorMessageTemplate = "[{ClassName}] - Error deleting file. User: {UserId}, File: {FileName}";
+			var errorMessage = string.Format(errorMessageTemplate, nameof(FileService), userId, fileName);
 			_logger.LogError(ex, errorMessage);
 			throw new ApplicationException(errorMessage, ex);
 		}
@@ -45,13 +46,15 @@ public class FileService : IFileService
 	{
 		try
 		{
-			_logger.LogInformation("[{source}] - Starting file download. User: {UserId}, File: {FileName}", nameof(FileService), userId, fileName);
+			const string infoMessageTemplate = "[{Source}] - Starting file download. User: {UserId}, File: {FileName}";
+			_logger.LogInformation(infoMessageTemplate, nameof(FileService), userId, fileName);
 
 			return await _fileRepository.GetAsync(userId, fileName, cancellationToken);
 		}
 		catch (Exception ex)
 		{
-			var errorMessage = $"[{nameof(FileService)}] - Error while getting the file. User: {userId}, File: {fileName}";
+			const string errorMessageTemplate = "[{Source}] - Error while getting the file. User: {UserId}, File: {FileName}";
+			var errorMessage = string.Format(errorMessageTemplate, nameof(FileService), userId, fileName);
 			_logger.LogError(ex, errorMessage);
 			throw new ApplicationException(errorMessage, ex);
 		}
@@ -61,18 +64,21 @@ public class FileService : IFileService
 	{
 		try
 		{
-			_logger.LogInformation("[{source}] - Starting file name listing. User: {UserId}", nameof(FileService), userId);
+			const string infoMessageTemplate = "[{Source}] - Starting file name listing. User: {UserId}";
+			_logger.LogInformation(infoMessageTemplate, nameof(FileService), userId);
 
 			var files = await _fileRepository.GetAllAsync(userId, cancellationToken);
 			var fileNames = files.Select(file => file.FileName).ToList();
 
-			_logger.LogInformation("[{source}] - Successfully listed {FileCount} file names for user {UserId}", nameof(FileService), fileNames.Count, userId);
+			const string successMessageTemplate = "[{Source}] - Successfully listed {FileCount} file names for user {UserId}";
+			_logger.LogInformation(successMessageTemplate, nameof(FileService), fileNames.Count, userId);
 
 			return fileNames;
 		}
 		catch (Exception ex)
 		{
-			var errorMessage = $"[{nameof(FileService)}] - Error while listing file names. User: {userId}";
+			const string errorMessageTemplate = "[{Source}] - Error while listing file names. User: {UserId}";
+			var errorMessage = string.Format(errorMessageTemplate, nameof(FileService), userId);
 			_logger.LogError(ex, errorMessage);
 			throw new ApplicationException(errorMessage, ex);
 		}
@@ -88,24 +94,33 @@ public class FileService : IFileService
 			if (file.Length <= 0)
 				throw new ArgumentException("Invalid file size", nameof(file));
 
-			_logger.LogInformation("[{source}] - Starting file upload. User: {UserId}, File: {FileName}", nameof(FileService), userId, file.FileName);
+			const string infoMessageTemplate = "[{Source}] - Starting file upload. User: {UserId}, File: {FileName}";
+			_logger.LogInformation(infoMessageTemplate, nameof(FileService), userId, file.FileName);
 
 			var result = await _fileRepository.UpdateAsync(userId, file, cancellationToken);
 			if (result)
-				_logger.LogInformation("[{source}] - File saved successfully. User: {UserId}, File: {FileName}", nameof(FileService), userId, file.FileName);
+			{
+				const string successMessageTemplate = "[{Source}] - File saved successfully. User: {UserId}, File: {FileName}";
+				_logger.LogInformation(successMessageTemplate, nameof(FileService), userId, file.FileName);
+			}
 			else
-				_logger.LogWarning("[{source}] - Failed to save file. User: {UserId}, File: {FileName}", nameof(FileService), userId, file.FileName);
+			{
+				const string warningMessageTemplate = "[{Source}] - Failed to save file. User: {UserId}, File: {FileName}";
+				_logger.LogWarning(warningMessageTemplate, nameof(FileService), userId, file.FileName);
+			}
 
 			return result;
 		}
 		catch (ArgumentException ex)
 		{
-			_logger.LogWarning(ex, "[{source}] - Validation error while saving file. User: {UserId}, File: {FileName}", nameof(FileService), userId, file?.FileName);
+			const string warningMessageTemplate = "[{Source}] - Validation error while saving file. User: {UserId}, File: {FileName}";
+			_logger.LogWarning(ex, warningMessageTemplate, nameof(FileService), userId, file?.FileName);
 			throw;
 		}
 		catch (Exception ex)
 		{
-			var errorMessage = $"[{nameof(FileService)}] - Unexpected error while saving file. User: {userId}, File: {file?.FileName}";
+			const string errorMessageTemplate = "[{Source}] - Unexpected error while saving file. User: {UserId}, File: {FileName}";
+			var errorMessage = string.Format(errorMessageTemplate, nameof(FileService), userId, file?.FileName);
 			_logger.LogError(ex, errorMessage);
 			throw new ApplicationException(errorMessage, ex);
 		}
