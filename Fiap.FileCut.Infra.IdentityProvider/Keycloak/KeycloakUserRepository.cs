@@ -15,7 +15,7 @@ public class KeycloakUserRepository(
 
     public async Task<User?> GetUserAsync(Guid id, CancellationToken cancellationToken = default)
     {
-        var httpClient = await GetHttpClient(cancellationToken);
+        var httpClient = await GetHttpClientAsync(cancellationToken);
         var response = await httpClient.GetAsync($"{KEYCLOAK_GET_USER_URL}/{id}", cancellationToken);
 
         if (!response.IsSuccessStatusCode)

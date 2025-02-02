@@ -15,7 +15,7 @@ public abstract class OidcRepository(
     protected OidcConfiguration configuration = configuration;
     protected IMemoryCache memoryCache = memoryCache;
 
-    protected async Task<HttpClient> GetHttpClient(CancellationToken cancellationToken = default)
+    protected async Task<HttpClient> GetHttpClientAsync(CancellationToken cancellationToken = default)
     {
         var httpClient = httpClientFactory.CreateClient();
         var autority = new Uri(configuration.Authority);

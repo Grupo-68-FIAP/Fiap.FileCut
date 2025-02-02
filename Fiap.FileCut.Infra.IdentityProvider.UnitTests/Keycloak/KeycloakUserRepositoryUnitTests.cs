@@ -1,13 +1,14 @@
 ﻿using Fiap.FileCut.Infra.IdentityProvider.Keycloak;
 using Fiap.FileCut.Infra.IdentityProvider.Keycloak.Objects;
 using Microsoft.Extensions.Caching.Memory;
+using Microsoft.Extensions.Configuration;
 using Moq;
 using Moq.Protected;
 using System.Net;
 
 namespace Fiap.FileCut.Infra.IdentityProvider.UnitTests.Keycloak;
 
-public class UserRepositoryUnitTests
+public class KeycloakUserRepositoryUnitTests
 {
     [Fact]
     public async Task GetUserAsync_WhenCalled_ReturnsUser()
@@ -16,11 +17,9 @@ public class UserRepositoryUnitTests
         var id = new Guid("9b5199a0-7436-4168-80b3-6966ef60c1f2");
 
         var memoryCache = new FakeCache();
+        memoryCache.Set(OidcRepository.CacheKeys.OIDC_CLIENT_TOKEN, "fake token");
 
-        var oidcConfigurationResponse = await GetJsonFileByName("oidc-configuration-response.json");
-        var oidcGetTokenResponse = await GetJsonFileByName("oidc-get-tonken-response.json");
-        var oidcGetUserResponse = await GetJsonFileByName("keycloak-get-user-response.json");
-
+        var oidcGetUserResponse = await IdentityProviderTestsHelpers.GetJsonFileByName("keycloak-get-user-response.json");
         var mockHandler = new Mock<HttpMessageHandler>();
         mockHandler.Protected()
             .Setup<Task<HttpResponseMessage>>(
@@ -31,24 +30,7 @@ public class UserRepositoryUnitTests
             .ReturnsAsync((HttpRequestMessage req, CancellationToken _) =>
             {
                 Assert.NotNull(req.RequestUri);
-                if (req.RequestUri.AbsolutePath.Contains("realms/sample/.well-known/openid-configuration")
-                || req.RequestUri.AbsolutePath.Contains("/realms/sample/protocol/openid-connect/certs"))
-                {
-                    return new HttpResponseMessage
-                    {
-                        StatusCode = HttpStatusCode.OK,
-                        Content = new StringContent(oidcConfigurationResponse)
-                    };
-                }
-                else if (req.RequestUri.AbsolutePath.Contains("realms/sample/protocol/openid-connect/token"))
-                {
-                    return new HttpResponseMessage
-                    {
-                        StatusCode = HttpStatusCode.OK,
-                        Content = new StringContent(oidcGetTokenResponse)
-                    };
-                }
-                else if (req.RequestUri.AbsolutePath.Contains($"realms/sample/users/{id}"))
+                if (req.RequestUri.AbsolutePath.Contains($"realms/sample/users/{id}"))
                 {
                     return new HttpResponseMessage
                     {
@@ -130,8 +112,101 @@ public class UserRepositoryUnitTests
         Assert.Null(user);
     }
 
-    private static async Task<string> GetJsonFileByName(string name)
+    [Fact]
+    public void KeycloakConfiguration_WhenEnvironmentVariablesAreSet_ReturnsInstance()
     {
-        return await File.ReadAllTextAsync(Path.Combine(Directory.GetCurrentDirectory(), "Resources", name));
+        // Arrange
+        Environment.SetEnvironmentVariable("OPENID_AUDIENCE", "TestValue");
+        Environment.SetEnvironmentVariable("OPENID_SECRET", "TestValue");
+        Environment.SetEnvironmentVariable("OPENID_AUTHORITY", "http://test:100/realms/test");
+
+        // Act
+        var configuration = new KeycloakConfiguration();
+        // Assert
+        Assert.NotNull(configuration);
+        Assert.Equal("test", configuration.Realm);
+    }
+
+    [Fact]
+    public void KeycloakConfiguration_WhenConfigurationIsSet_ReturnsInstance()
+    {
+        // Arrange
+        var vars = new Dictionary<string, string?>
+        {
+            ["OpenIdAudiance"] = "TestValue",
+            ["OpenIdSecret"] = "TestValue",
+            ["OpenIdAuthority"] = "http://test:100/realms/test",
+            ["KeycloakRealm"] = "test"
+        };
+        var configuration = new ConfigurationBuilder()
+            .AddInMemoryCollection(vars)
+            .Build();
+        // Act
+        var keycloakConfiguration = new KeycloakConfiguration(configuration);
+        // Assert
+        Assert.NotNull(keycloakConfiguration);
+        Assert.Equal("test", keycloakConfiguration.Realm);
+    }
+
+    [Theory]
+    [InlineData("OPENID_AUDIENCE")]
+    [InlineData("OPENID_SECRET")]
+    [InlineData("OPENID_AUTHORITY")]
+    [InlineData("KEYCLOAK_RELM")]
+    public void KeycloakConfiguration_WhenEnvironmentVariablesAreNotSet_ThrowsException(string varToSetNull)
+    {
+        // Arrange
+        void Set(string varName, string value)
+        {
+            if (varName == varToSetNull)
+                Environment.SetEnvironmentVariable(varName, null);
+            else
+                Environment.SetEnvironmentVariable(varName, value);
+        }
+        Set("OPENID_AUDIENCE", "TestValue");
+        Set("OPENID_SECRET", "TestValue");
+        Set("OPENID_AUTHORITY", "TestValue");
+        Set("KEYCLOAK_RELM", "TestValue");
+
+        // Act
+        void Act() => new KeycloakConfiguration();
+
+        // Assert
+        Assert.Throws<MissingFieldException>(Act);
+    }
+
+    [Theory]
+    [InlineData("OpenIdAudiance")]
+    [InlineData("OpenIdSecret")]
+    [InlineData("OpenIdAuthority")]
+    [InlineData("KeycloakRealm")]
+    public void KeycloakConfiguration_WhenConfigurationIsNotSet_ThrowsException(string varToSetNull)
+    {
+        // Arrange
+        var vars = new Dictionary<string, string?>
+        {
+            ["OpenIdAudiance"] = "TestValue",
+            ["OpenIdSecret"] = "TestValue",
+            ["OpenIdAuthority"] = "TestValue",
+            ["KeycloakRealm"] = "TestValue"
+        };
+        void Set(string varName, string value)
+        {
+            if (varName == varToSetNull)
+                vars[varName] = null;
+            else
+                vars[varName] = value;
+        }
+        Set("OpenIdAudiance", "TestValue");
+        Set("OpenIdSecret", "TestValue");
+        Set("OpenIdAuthority", "TestValue");
+        Set("KeycloakRealm", "TestValue");
+        var configuration = new ConfigurationBuilder()
+            .AddInMemoryCollection(vars)
+            .Build();
+        // Act
+        void Act() => new KeycloakConfiguration(configuration);
+        // Assert
+        Assert.Throws<MissingFieldException>(Act);
     }
 }
