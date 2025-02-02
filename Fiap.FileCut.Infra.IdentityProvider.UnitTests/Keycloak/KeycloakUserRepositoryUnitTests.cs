@@ -1,4 +1,5 @@
-﻿using Fiap.FileCut.Infra.IdentityProvider.Keycloak;
+﻿using Castle.Core.Configuration;
+using Fiap.FileCut.Infra.IdentityProvider.Keycloak;
 using Fiap.FileCut.Infra.IdentityProvider.Keycloak.Objects;
 using Microsoft.Extensions.Caching.Memory;
 using Microsoft.Extensions.Configuration;
@@ -68,7 +69,6 @@ public class KeycloakUserRepositoryUnitTests
         var id = Guid.NewGuid();
 
         var memoryCache = new FakeCache();
-
         memoryCache.Set(OidcRepository.CacheKeys.OIDC_CLIENT_TOKEN, "fake token");
 
         var mockHandler = new Mock<HttpMessageHandler>();
@@ -167,12 +167,18 @@ public class KeycloakUserRepositoryUnitTests
         Set("OPENID_SECRET", "TestValue");
         Set("OPENID_AUTHORITY", "TestValue");
         Set("KEYCLOAK_RELM", "TestValue");
-
-        // Act
-        void Act() => new KeycloakConfiguration();
-
-        // Assert
-        Assert.Throws<MissingFieldException>(Act);
+        try
+        {
+            // Act
+            var instance = new KeycloakConfiguration();
+            Assert.Null(instance);
+            Assert.Fail("Should have thrown an exception");
+        }
+        catch (MissingFieldException)
+        {
+            // Assert
+            Assert.True(true);
+        }
     }
 
     [Theory]
@@ -204,9 +210,17 @@ public class KeycloakUserRepositoryUnitTests
         var configuration = new ConfigurationBuilder()
             .AddInMemoryCollection(vars)
             .Build();
-        // Act
-        void Act() => new KeycloakConfiguration(configuration);
-        // Assert
-        Assert.Throws<MissingFieldException>(Act);
+        try
+        {
+            // Act
+            var instance = new KeycloakConfiguration(configuration);
+            Assert.Null(instance);
+            Assert.Fail("Should have thrown an exception");
+        }
+        catch (MissingFieldException)
+        {
+            // Assert
+            Assert.True(true);
+        }
     }
 }
