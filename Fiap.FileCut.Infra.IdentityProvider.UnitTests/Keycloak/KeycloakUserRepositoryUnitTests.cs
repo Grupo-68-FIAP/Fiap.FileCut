@@ -1,5 +1,4 @@
-﻿using Castle.Core.Configuration;
-using Fiap.FileCut.Infra.IdentityProvider.Keycloak;
+﻿using Fiap.FileCut.Infra.IdentityProvider.Keycloak;
 using Fiap.FileCut.Infra.IdentityProvider.Keycloak.Objects;
 using Microsoft.Extensions.Caching.Memory;
 using Microsoft.Extensions.Configuration;
@@ -17,7 +16,7 @@ public class KeycloakUserRepositoryUnitTests
         // Arrange
         var id = new Guid("9b5199a0-7436-4168-80b3-6966ef60c1f2");
 
-        var memoryCache = new FakeCache();
+        using var memoryCache = new FakeCache();
         memoryCache.Set(OidcRepository.CacheKeys.OIDC_CLIENT_TOKEN, "fake token");
 
         var oidcGetUserResponse = await IdentityProviderTestsHelpers.GetJsonFileByName("keycloak-get-user-response.json");
@@ -68,7 +67,7 @@ public class KeycloakUserRepositoryUnitTests
         // Arrange
         var id = Guid.NewGuid();
 
-        var memoryCache = new FakeCache();
+        using var memoryCache = new FakeCache();
         memoryCache.Set(OidcRepository.CacheKeys.OIDC_CLIENT_TOKEN, "fake token");
 
         var mockHandler = new Mock<HttpMessageHandler>();
