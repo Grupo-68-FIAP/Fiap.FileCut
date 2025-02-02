@@ -18,7 +18,7 @@ public class GestaoApplicationUnitTests
         var formFile = new Mock<IFormFile>();
         fileService.Setup(x => x.GetFileAsync(guid, videoName, CancellationToken.None)).ReturnsAsync(formFile.Object);
         // Act
-        var result = await gestaoApplication.GetVideoAsync(guid, videoName);
+        var result = await gestaoApplication.GetVideoAsync(guid, videoName, CancellationToken.None);
         // Assert
         Assert.Equal(formFile.Object, result);
     }
@@ -35,7 +35,7 @@ public class GestaoApplicationUnitTests
         formFile.Setup(x => x.FileName).Returns(videoName);
         fileService.Setup(x => x.GetFileAsync(guid, videoName, CancellationToken.None)).ReturnsAsync(formFile.Object);
         // Act
-        var result = await gestaoApplication.GetVideoMetadataAsync(guid, videoName);
+        var result = await gestaoApplication.GetVideoMetadataAsync(guid, videoName, CancellationToken.None);
         // Assert
         Assert.NotNull(result);
         Assert.Equal(videoName, result.Name);
@@ -54,7 +54,7 @@ public class GestaoApplicationUnitTests
         fileService.Setup(x => x.GetFileNamesAsync(guid, CancellationToken.None)).ReturnsAsync([videoName]);
         fileService.Setup(x => x.GetFileAsync(guid, videoName, CancellationToken.None)).ReturnsAsync(formFile.Object);
         // Act
-        var result = await gestaoApplication.ListAllVideosAsync(guid);
+        var result = await gestaoApplication.ListAllVideosAsync(guid, CancellationToken.None);
         // Assert
         Assert.NotNull(result);
         Assert.NotEmpty(result);
@@ -70,7 +70,7 @@ public class GestaoApplicationUnitTests
         var guid = Guid.NewGuid();
         fileService.Setup(x => x.GetFileNamesAsync(guid, CancellationToken.None)).ReturnsAsync([]);
         // Act
-        var result = await gestaoApplication.ListAllVideosAsync(guid);
+        var result = await gestaoApplication.ListAllVideosAsync(guid, CancellationToken.None);
         // Assert
         Assert.NotNull(result);
         Assert.Empty(result);

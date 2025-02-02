@@ -24,7 +24,8 @@ public class LocalDiskFileRepository : IFileRepository
 			if (!File.Exists(filePath))
 				return false;
 
-			File.Delete(filePath);
+			await Task.Run(() => File.Delete(filePath), cancellationToken);
+
 			return !File.Exists(filePath);
 		}
 		catch (Exception ex)
@@ -47,7 +48,8 @@ public class LocalDiskFileRepository : IFileRepository
 
 		var fileNames = Directory.GetFiles(userFolderPath)
 								 .Select(Path.GetFileName)
-								 .ToList();
+								 .Where(name => !string.IsNullOrEmpty(name))
+								 .ToList()!; 
 
 		return await Task.FromResult(fileNames);
 	}
@@ -80,7 +82,7 @@ public class LocalDiskFileRepository : IFileRepository
 		}
 	}
 
-	public async Task<IFormFile> GetAsync(Guid userId, string fileName, CancellationToken cancellationToken)
+	public async Task<IFormFile?> GetAsync(Guid userId, string fileName, CancellationToken cancellationToken)
 	{
 		try
 		{
@@ -101,8 +103,7 @@ public class LocalDiskFileRepository : IFileRepository
 
 	public async Task<bool> UpdateAsync(Guid userId, IFormFile file, CancellationToken cancellationToken)
 	{
-		if (file == null)
-			throw new ArgumentNullException(nameof(file));
+		ArgumentNullException.ThrowIfNull(file);
 
 		try
 		{
@@ -127,7 +128,7 @@ public class LocalDiskFileRepository : IFileRepository
 		}
 	}
 
-	private void EnsureDirectoryExists(string path)
+	private static void EnsureDirectoryExists(string path)
 	{
 		if (!Directory.Exists(path))
 		{

@@ -4,7 +4,7 @@ namespace Fiap.FileCut.Core.Interfaces.Repository;
 
 public interface IFileRepository
 {
-    Task<IFormFile> GetAsync(Guid userId, string fileName, CancellationToken cancellationToken);
+    Task<IFormFile?> GetAsync(Guid userId, string fileName, CancellationToken cancellationToken);
     Task<IList<IFormFile>> GetAllAsync(Guid userId, CancellationToken cancellationToken);
     Task<IList<string>> ListFileNamesAsync(Guid userId, CancellationToken cancellationToken = default);
 	Task<bool> UpdateAsync(Guid userId, IFormFile file, CancellationToken cancellationToken);

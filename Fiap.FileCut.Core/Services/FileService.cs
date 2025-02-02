@@ -35,8 +35,9 @@ public class FileService : IFileService
 		}
 		catch (Exception ex)
 		{
-			_logger.LogError(ex, "[{source}] - Unexpected error while deleting file. User: {UserId}, File: {FileName}", nameof(FileService), userId, fileName);
-			throw;
+			var errorMessage = $"[{nameof(FileService)}] - Error deleting file. User: {userId}, File: {fileName}";
+			_logger.LogError(ex, errorMessage);
+			throw new ApplicationException(errorMessage, ex);
 		}
 	}
 
@@ -50,8 +51,9 @@ public class FileService : IFileService
 		}
 		catch (Exception ex)
 		{
-			_logger.LogError(ex, "[{source}] - Error while getting the file. User: {UserId}, File: {FileName}", nameof(FileService), userId, fileName);
-			throw;
+			var errorMessage = $"[{nameof(FileService)}] - Error while getting the file. User: {userId}, File: {fileName}";
+			_logger.LogError(ex, errorMessage);
+			throw new ApplicationException(errorMessage, ex);
 		}
 	}
 
@@ -70,8 +72,9 @@ public class FileService : IFileService
 		}
 		catch (Exception ex)
 		{
-			_logger.LogError(ex, "[{source}] - Error while listing file names. User: {UserId}", nameof(FileService), userId);
-			throw;
+			var errorMessage = $"[{nameof(FileService)}] - Error while listing file names. User: {userId}";
+			_logger.LogError(ex, errorMessage);
+			throw new ApplicationException(errorMessage, ex);
 		}
 	}
 
@@ -79,8 +82,11 @@ public class FileService : IFileService
 	{
 		try
 		{
+			if (file == null)
+				throw new ArgumentNullException(nameof(file), "File cannot be null.");
+
 			if (file.Length <= 0)
-				throw new ArgumentException("Invalid file size");
+				throw new ArgumentException("Invalid file size", nameof(file));
 
 			_logger.LogInformation("[{source}] - Starting file upload. User: {UserId}, File: {FileName}", nameof(FileService), userId, file.FileName);
 
@@ -94,13 +100,14 @@ public class FileService : IFileService
 		}
 		catch (ArgumentException ex)
 		{
-			_logger.LogError(ex, "[{source}] - Validation error while saving file. User: {UserId}, File: {FileName}", nameof(FileService), userId, file.FileName);
+			_logger.LogWarning(ex, "[{source}] - Validation error while saving file. User: {UserId}, File: {FileName}", nameof(FileService), userId, file?.FileName);
 			throw;
 		}
 		catch (Exception ex)
 		{
-			_logger.LogError(ex, "[{source}] - Unexpected error while saving file. User: {UserId}, File: {FileName}", nameof(FileService), userId, file.FileName);
-			throw;
+			var errorMessage = $"[{nameof(FileService)}] - Unexpected error while saving file. User: {userId}, File: {file?.FileName}";
+			_logger.LogError(ex, errorMessage);
+			throw new ApplicationException(errorMessage, ex);
 		}
 	}
 }

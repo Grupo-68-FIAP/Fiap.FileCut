@@ -23,10 +23,12 @@ public class S3FileRepository : IFileRepository
 		_s3Helper = s3Helper;
 	}
 
-	public async Task<IFormFile> GetAsync(Guid userId, string fileName, CancellationToken cancellationToken)
+	public async Task<IFormFile?> GetAsync(Guid userId, string fileName, CancellationToken cancellationToken)
 	{
 		try
 		{
+			ArgumentNullException.ThrowIfNull(fileName);  // Lançar exceção de argumento nulo se fileName for nulo
+
 			if (!FileHelper.IsValidFileName(fileName))
 			{
 				_logger.LogWarning("[{source}] - Invalid file name: {FileName}", nameof(S3FileRepository), fileName);
@@ -54,14 +56,16 @@ public class S3FileRepository : IFileRepository
 		catch (Exception ex)
 		{
 			_logger.LogError(ex, "[{source}] - Unexpected error while downloading file. User: {UserId}, File: {FileName}", nameof(S3FileRepository), userId, fileName);
-			throw;
+			throw new InvalidOperationException($"Unexpected error while downloading file {fileName} for user {userId}.", ex);
 		}
 	}
 
-	public async Task<IList<IFormFile>> GetAllAsync(Guid userId, CancellationToken cancellationToken = default)
+	public async Task<IList<IFormFile>> GetAllAsync(Guid userId, CancellationToken cancellationToken)
 	{
 		try
 		{
+			ArgumentNullException.ThrowIfNull(userId); 
+
 			_logger.LogInformation("[{source}] - Starting file listing. User: {UserId}", nameof(S3FileRepository), userId);
 
 			var request = new ListObjectsV2Request
@@ -71,7 +75,7 @@ public class S3FileRepository : IFileRepository
 			};
 
 			var response = await _s3Client.ListObjectsV2Async(request, cancellationToken);
-			if (response.S3Objects == null || !response.S3Objects.Any())
+			if (response.S3Objects == null || response.S3Objects.Count == 0)
 			{
 				_logger.LogWarning("[{source}] - No files found for user {UserId}", nameof(S3FileRepository), userId);
 				return new List<IFormFile>();
@@ -95,7 +99,7 @@ public class S3FileRepository : IFileRepository
 		catch (Exception ex)
 		{
 			_logger.LogError(ex, "[{source}] - Unexpected error while listing files. User: {UserId}", nameof(S3FileRepository), userId);
-			throw;
+			throw new InvalidOperationException($"Unexpected error while listing files for user {userId}.", ex);
 		}
 	}
 
