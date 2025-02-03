@@ -48,13 +48,19 @@ public class FileService : IFileService
 			const string infoMessageTemplate = "[{Source}] - Starting file download. User: {UserId}, File: {FileName}";
 			_logger.LogInformation(infoMessageTemplate, nameof(FileService), userId, fileName);
 
-			return await _fileRepository.GetAsync(userId, fileName, cancellationToken);
+			var file = await _fileRepository.GetAsync(userId, fileName, cancellationToken);
+			if (file == null)
+			{
+				_logger.LogWarning("[{Source}] - File not found. User: {UserId}, File: {FileName}", nameof(FileService), userId, fileName);
+				throw new FileNotFoundException($"The file '{fileName}' for user '{userId}' was not found.");
+			}
+
+			return file;
 		}
 		catch (Exception ex)
 		{
-			const string errorMessageTemplate = "[{Source}] - Error while getting the file. User: {UserId}, File: {FileName}";
-			_logger.LogError(ex, errorMessageTemplate, nameof(FileService), userId, fileName);
-			throw new InvalidOperationException($"[{nameof(FileService)}] - Error while getting the file. User: {userId}, File: {fileName}", ex);
+			_logger.LogError(ex, "[{Source}] - Error while downloading file. User: {UserId}, File: {FileName}", nameof(FileService), userId, fileName);
+			throw;
 		}
 	}
 

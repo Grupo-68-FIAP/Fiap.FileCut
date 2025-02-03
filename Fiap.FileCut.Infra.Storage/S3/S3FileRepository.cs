@@ -187,7 +187,7 @@ public class S3FileRepository : IFileRepository
 		catch (ArgumentException argEx)
 		{
 			_logger.LogWarning(argEx, "[{source}] - Invalid file name. User: {UserId}, File: {FileName}", nameof(S3FileRepository), userId, fileName);
-			throw; 
+			throw new InvalidOperationException($"Invalid file name '{fileName}' provided for user '{userId}'.", argEx);
 		}
 		catch (Exception ex)
 		{
@@ -231,10 +231,8 @@ public class S3FileRepository : IFileRepository
 		}
 		catch (Exception ex)
 		{
-			const string errorMessageTemplate = "[{source}] - Unexpected error while listing file names. User: {UserId}. Error: {ErrorMessage}";
-			var errorMessage = string.Format(errorMessageTemplate, nameof(S3FileRepository), userId, ex.Message);
-			_logger.LogError(ex, errorMessage);
-			throw new InvalidOperationException("An unexpected error occurred while listing the files. Please try again later.", ex);
+			_logger.LogError(ex, "[{source}] - Unexpected error while listing file names. User: {UserId}. Error: {ErrorMessage}", nameof(S3FileRepository), userId, ex.Message);
+			throw new InvalidOperationException($"Unexpected error while listing files for user '{userId}'.", ex);
 		}
 	}
 }
