@@ -1,7 +1,13 @@
-﻿using Microsoft.AspNetCore.Authentication.JwtBearer;
+﻿using Fiap.FileCut.Core.Interfaces.Repository;
+using Fiap.FileCut.Core.Interfaces.Services;
+using Fiap.FileCut.Core.Services;
+using Fiap.FileCut.Infra.IdentityProvider.Keycloak;
+using Fiap.FileCut.Infra.IdentityProvider;
+using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.IdentityModel.Tokens;
+using Fiap.FileCut.Infra.IdentityProvider.Keycloak.Objects;
 
 namespace Fiap.FileCut.Infra.Api.Configurations;
 
@@ -16,27 +22,30 @@ public static class OpenIdConfig
     /// <param name="services">ServiceCollection instance.</param>
     public static void AddJwtBearerAuthentication(this IServiceCollection services)
     {
-        string openIdAuthority = Environment.GetEnvironmentVariable("OPENID_AUTHORITY")
-            ?? throw new MissingFieldException("Need to configure a Open Id Authority and Audiance");
-
-        var clientId = Environment.GetEnvironmentVariable("OPENID_AUDIENCE");
-
+        var configuration = new KeycloakConfiguration();
 
         services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
-            .AddJwtBearer(options =>
-            {
-                options.Authority = openIdAuthority;
-                options.Audience = clientId;
-                options.RequireHttpsMetadata = false;
-                options.TokenValidationParameters = new TokenValidationParameters
-                {
-                    ValidIssuer = openIdAuthority,
-                    ValidAudience = clientId,
-                    ValidateIssuer = true,
-                    ValidateAudience = false,
-                    ValidateLifetime = true,
-                };
-            });
+           .AddJwtBearer(options =>
+           {
+               options.Authority = configuration.Authority;
+               options.Audience = configuration.ClientId;
+               options.RequireHttpsMetadata = false;
+               options.TokenValidationParameters = new TokenValidationParameters
+               {
+                   ValidIssuer = configuration.Authority,
+                   ValidAudience = configuration.ClientId,
+                   ValidateIssuer = true,
+                   ValidateAudience = false,
+                   ValidateLifetime = true,
+               };
+           });
+
+        services.AddMemoryCache();
+        services.AddHttpContextAccessor();
+        services.AddHttpClient();
+        services.AddSingleton(c => configuration);
+        services.AddScoped<IUserService, UserService>();
+        services.AddScoped<IUserRepository, KeycloakUserRepository>();
     }
 
     /// <summary>
