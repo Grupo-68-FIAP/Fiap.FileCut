@@ -1,6 +1,12 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
 
   <ItemGroup>
+    <PackageReference Include="AWSSDK.S3" Version="3.7.412.4" />
+	  <PackageReference Include="Microsoft.Extensions.Options" Version="8.0.2" />
+	  <PackageReference Include="Microsoft.Extensions.Configuration" Version="8.0.2" />
+  </ItemGroup>
+
+  <ItemGroup>
     <ProjectReference Include="..\Fiap.FileCut.Core\Fiap.FileCut.Core.csproj" />
   </ItemGroup>
 

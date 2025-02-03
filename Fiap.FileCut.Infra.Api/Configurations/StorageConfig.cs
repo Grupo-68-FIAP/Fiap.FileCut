@@ -13,9 +13,10 @@ public static class StorageConfig
     {
         var storageProvider = Environment.GetEnvironmentVariable("STORAGE_PROVIDER");
 
-        //TODO: JOSÉ AQUI
-        //services.AddScoped<IFileRepository, LocalDiskFileRepository>();
-        //services.AddScoped<IFileRepository, S3FileRepository>();
+        if (!String.IsNullOrEmpty(storageProvider))
+            services.AddScoped<IFileRepository, S3FileRepository>();
+        else
+            services.AddScoped<IFileRepository, LocalDiskFileRepository>();
 
         services.AddScoped<IFileService, FileService>();
     }
