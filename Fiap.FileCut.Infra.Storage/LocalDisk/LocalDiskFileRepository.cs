@@ -34,7 +34,7 @@ public class LocalDiskFileRepository : IFileRepository
 		}
 	}
 
-	public async Task<IList<string>> ListFileNamesAsync(Guid userId, CancellationToken cancellationToken)
+	public async Task<IList<string>> ListFileNamesAsync(Guid userId, CancellationToken cancellationToken = default)
 	{
 		if (userId == Guid.Empty)
 			throw new ArgumentException("User ID cannot be empty.", nameof(userId));

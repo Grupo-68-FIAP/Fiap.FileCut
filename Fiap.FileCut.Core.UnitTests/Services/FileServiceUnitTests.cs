@@ -113,9 +113,7 @@ public class FileServiceUnitTests
 		var cancellationToken = CancellationToken.None;
 
 		var fileRepositoryMock = new Mock<IFileRepository>();
-		fileRepositoryMock
-			.Setup(repo => repo.GetAsync(userId, fileName, cancellationToken))
-			.ReturnsAsync((IFormFile)null);
+
 
 		var loggerMock = new Mock<ILogger<FileService>>();
 		var fileService = new FileService(fileRepositoryMock.Object, loggerMock.Object);

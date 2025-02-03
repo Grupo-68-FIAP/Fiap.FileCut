@@ -35,9 +35,9 @@ public class FileService : IFileService
 		}
 		catch (Exception ex)
 		{
-			var errorMessage = $"[{nameof(FileService)}] - Error deleting file. User: {userId}, File: {fileName}";
-			_logger.LogError(ex, errorMessage);
-			throw new InvalidOperationException(errorMessage, ex);
+			_logger.LogError(ex, "[{Service}] - Error deleting file. User: {UserId}, File: {FileName}",
+				nameof(FileService), userId, fileName);
+			throw new InvalidOperationException($"[{nameof(FileService)}] - Error deleting file. User: {userId}, File: {fileName}", ex);
 		}
 	}
 
@@ -59,8 +59,11 @@ public class FileService : IFileService
 		}
 		catch (Exception ex)
 		{
-			_logger.LogError(ex, "[{Source}] - Error while downloading file. User: {UserId}, File: {FileName}", nameof(FileService), userId, fileName);
-			throw;
+			_logger.LogError(ex, "[{Source}] - Error while downloading file. User: {UserId}, File: {FileName}",
+				nameof(FileService), userId, fileName);
+
+			throw new InvalidOperationException(
+				$"[{nameof(FileService)}] - Error while downloading file. User: {userId}, File: {fileName}", ex);
 		}
 	}
 

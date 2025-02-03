@@ -58,9 +58,6 @@ namespace Fiap.FileCut.Core.InfraStorage.UnitTests.S3
 			var fileName = "testfile.txt";
 			var cancellationToken = CancellationToken.None;
 
-			_s3ClientMock.Setup(s3Client => s3Client.GetObjectAsync(It.IsAny<GetObjectRequest>(), cancellationToken))
-				.ReturnsAsync((GetObjectResponse)null);
-
 			var exception = await Assert.ThrowsAsync<InvalidOperationException>(() =>
 				_fileRepository.GetAsync(userId, fileName, cancellationToken));
 
