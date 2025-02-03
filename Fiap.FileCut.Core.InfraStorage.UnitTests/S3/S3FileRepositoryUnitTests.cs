@@ -52,6 +52,47 @@ namespace Fiap.FileCut.Core.InfraStorage.UnitTests.S3
 		}
 
 		[Fact]
+		public async Task GetAsync_WhenS3ObjectIsNull_ShouldThrowInvalidOperationException()
+		{
+			var userId = Guid.NewGuid();
+			var fileName = "testfile.txt";
+			var cancellationToken = CancellationToken.None;
+
+			_s3ClientMock.Setup(s3Client => s3Client.GetObjectAsync(It.IsAny<GetObjectRequest>(), cancellationToken))
+				.ReturnsAsync((GetObjectResponse)null);
+
+			var exception = await Assert.ThrowsAsync<InvalidOperationException>(() =>
+				_fileRepository.GetAsync(userId, fileName, cancellationToken));
+
+			Assert.Equal($"Unexpected error while downloading file '{fileName}' for user '{userId}'.", exception.Message);
+
+			_s3ClientMock.Verify(s3Client => s3Client.GetObjectAsync(It.IsAny<GetObjectRequest>(), cancellationToken), Times.Once);
+		}
+
+		[Fact]
+		public async Task GetAsync_WhenResponseStreamIsNull_ShouldThrowInvalidOperationException()
+		{
+			var userId = Guid.NewGuid();
+			var fileName = "testfile.txt";
+			var cancellationToken = CancellationToken.None;
+
+			var s3ObjectMock = new GetObjectResponse
+			{
+				ResponseStream = null
+			};
+
+			_s3ClientMock.Setup(s3Client => s3Client.GetObjectAsync(It.IsAny<GetObjectRequest>(), cancellationToken))
+				.ReturnsAsync(s3ObjectMock);
+
+			var exception = await Assert.ThrowsAsync<InvalidOperationException>(() =>
+				_fileRepository.GetAsync(userId, fileName, cancellationToken));
+
+			Assert.Equal($"Unexpected error while downloading file '{fileName}' for user '{userId}'.", exception.Message);
+
+			_s3ClientMock.Verify(s3Client => s3Client.GetObjectAsync(It.IsAny<GetObjectRequest>(), cancellationToken), Times.Once);
+		}
+
+		[Fact]
 		public async Task GetAsync_WhenFileNotFound_ShouldThrowFileRepositoryException()
 		{
 			var userId = Guid.NewGuid();
@@ -178,6 +219,166 @@ namespace Fiap.FileCut.Core.InfraStorage.UnitTests.S3
 
 			var exception = await Assert.ThrowsAsync<FileRepositoryException>(() => _fileRepository.ListFileNamesAsync(userId, cancellationToken));
 			Assert.Contains("Error listing file names from S3. Please", exception.Message);
+		}
+
+		[Fact]
+		public async Task GetAllAsync_WhenNoFilesFound_ShouldReturnEmptyList()
+		{
+			var userId = Guid.NewGuid();
+			var cancellationToken = CancellationToken.None;
+
+			var listResponse = new ListObjectsV2Response
+			{
+				S3Objects = new List<S3Object>()
+			};
+
+			_s3ClientMock.Setup(s3Client => s3Client.ListObjectsV2Async(It.IsAny<ListObjectsV2Request>(), cancellationToken))
+				.ReturnsAsync(listResponse);
+
+			var result = await _fileRepository.GetAllAsync(userId, cancellationToken);
+
+			Assert.Empty(result);
+
+			_s3ClientMock.Verify(s3Client => s3Client.ListObjectsV2Async(It.IsAny<ListObjectsV2Request>(), cancellationToken), Times.Once);
+		}
+
+		[Fact]
+		public async Task GetAllAsync_WhenFilesFound_ShouldReturnFileList()
+		{
+			var userId = Guid.NewGuid();
+			var cancellationToken = CancellationToken.None;
+
+			var s3ObjectList = new List<S3Object>
+	{
+		new S3Object { Key = $"{userId}/testfile1.txt" },
+		new S3Object { Key = $"{userId}/testfile2.txt" }
+	};
+
+			var listResponse = new ListObjectsV2Response
+			{
+				S3Objects = s3ObjectList
+			};
+
+			_s3ClientMock.Setup(s3Client => s3Client.ListObjectsV2Async(It.IsAny<ListObjectsV2Request>(), cancellationToken))
+				.ReturnsAsync(listResponse);
+
+			_s3ClientMock.Setup(client => client.GetObjectAsync(It.IsAny<GetObjectRequest>(), cancellationToken))
+				.ReturnsAsync(new GetObjectResponse { ResponseStream = new MemoryStream() });
+
+			var result = await _fileRepository.GetAllAsync(userId, cancellationToken);
+
+			Assert.Equal(2, result.Count);
+
+			_s3ClientMock.Verify(s3Client => s3Client.ListObjectsV2Async(It.IsAny<ListObjectsV2Request>(), cancellationToken), Times.Once);
+			_s3ClientMock.Verify(client => client.GetObjectAsync(It.IsAny<GetObjectRequest>(), cancellationToken), Times.Exactly(2));
+		}
+
+		[Fact]
+		public async Task GetAllAsync_WhenAmazonS3ExceptionThrown_ShouldThrowFileRepositoryException()
+		{
+			var userId = Guid.NewGuid();
+			var cancellationToken = CancellationToken.None;
+
+			_s3ClientMock.Setup(s3Client => s3Client.ListObjectsV2Async(It.IsAny<ListObjectsV2Request>(), cancellationToken))
+				.ThrowsAsync(new AmazonS3Exception("S3 error"));
+
+			var exception = await Assert.ThrowsAsync<FileRepositoryException>(() =>
+				_fileRepository.GetAllAsync(userId, cancellationToken));
+
+			Assert.Equal($"Error listing files from S3 for user '{userId}'.", exception.Message);
+
+			_s3ClientMock.Verify(s3Client => s3Client.ListObjectsV2Async(It.IsAny<ListObjectsV2Request>(), cancellationToken), Times.Once);
+		}
+
+		[Fact]
+		public async Task GetAllAsync_WhenExceptionThrown_ShouldThrowInvalidOperationException()
+		{
+			var userId = Guid.NewGuid();
+			var cancellationToken = CancellationToken.None;
+
+			_s3ClientMock.Setup(s3Client => s3Client.ListObjectsV2Async(It.IsAny<ListObjectsV2Request>(), cancellationToken))
+				.ThrowsAsync(new Exception("Unexpected error"));
+
+			var exception = await Assert.ThrowsAsync<InvalidOperationException>(() =>
+				_fileRepository.GetAllAsync(userId, cancellationToken));
+
+			Assert.Equal($"Unexpected error while listing files for user '{userId}'.", exception.Message);
+
+			_s3ClientMock.Verify(s3Client => s3Client.ListObjectsV2Async(It.IsAny<ListObjectsV2Request>(), cancellationToken), Times.Once);
+		}
+
+		[Fact]
+		public async Task DeleteAsync_WhenFileDeletedSuccessfully_ShouldReturnTrue()
+		{
+			var userId = Guid.NewGuid();
+			var fileName = "testfile.txt";
+			var cancellationToken = CancellationToken.None;
+
+			var deleteObjectResponse = new DeleteObjectResponse
+			{
+				HttpStatusCode = System.Net.HttpStatusCode.NoContent
+			};
+
+			_s3ClientMock.Setup(s3Client => s3Client.DeleteObjectAsync(It.IsAny<DeleteObjectRequest>(), cancellationToken))
+				.ReturnsAsync(deleteObjectResponse);
+
+			var result = await _fileRepository.DeleteAsync(userId, fileName, cancellationToken);
+
+			Assert.True(result);
+			_s3ClientMock.Verify(s3Client => s3Client.DeleteObjectAsync(It.IsAny<DeleteObjectRequest>(), cancellationToken), Times.Once);
+		}
+
+		[Fact]
+		public async Task DeleteAsync_WhenUnexpectedErrorOccurs_ShouldThrowFileRepositoryException()
+		{
+			var userId = Guid.NewGuid();
+			var fileName = "testfile.txt";
+			var cancellationToken = CancellationToken.None;
+
+			_s3ClientMock.Setup(s3Client => s3Client.DeleteObjectAsync(It.IsAny<DeleteObjectRequest>(), cancellationToken))
+				.ThrowsAsync(new Exception("Unexpected error"));
+
+			var exception = await Assert.ThrowsAsync<FileRepositoryException>(() =>
+				_fileRepository.DeleteAsync(userId, fileName, cancellationToken));
+
+			Assert.Equal("An unexpected error occurred while deleting the file. Please try again later.", exception.Message);
+			_s3ClientMock.Verify(s3Client => s3Client.DeleteObjectAsync(It.IsAny<DeleteObjectRequest>(), cancellationToken), Times.Once);
+		}
+
+		[Fact]
+		public async Task ListFileNamesAsync_WhenNoFilesFound_ShouldReturnEmptyList()
+		{
+			var userId = Guid.NewGuid();
+			var cancellationToken = CancellationToken.None;
+
+			var listObjectsResponse = new ListObjectsV2Response
+			{
+				S3Objects = new List<S3Object>()
+			};
+
+			_s3ClientMock.Setup(s3Client => s3Client.ListObjectsV2Async(It.IsAny<ListObjectsV2Request>(), cancellationToken))
+				.ReturnsAsync(listObjectsResponse);
+
+			var result = await _fileRepository.ListFileNamesAsync(userId, cancellationToken);
+
+			Assert.Empty(result);
+			_s3ClientMock.Verify(s3Client => s3Client.ListObjectsV2Async(It.IsAny<ListObjectsV2Request>(), cancellationToken), Times.Once);
+		}
+
+		[Fact]
+		public async Task ListFileNamesAsync_WhenUnexpectedErrorOccurs_ShouldThrowInvalidOperationException()
+		{
+			var userId = Guid.NewGuid();
+			var cancellationToken = CancellationToken.None;
+
+			_s3ClientMock.Setup(s3Client => s3Client.ListObjectsV2Async(It.IsAny<ListObjectsV2Request>(), cancellationToken))
+				.ThrowsAsync(new Exception("Unexpected error"));
+
+			var exception = await Assert.ThrowsAsync<InvalidOperationException>(() =>
+				_fileRepository.ListFileNamesAsync(userId, cancellationToken));
+
+			Assert.Equal($"Unexpected error while listing files for user '{userId}'.", exception.Message);
+			_s3ClientMock.Verify(s3Client => s3Client.ListObjectsV2Async(It.IsAny<ListObjectsV2Request>(), cancellationToken), Times.Once);
 		}
 	}
 }

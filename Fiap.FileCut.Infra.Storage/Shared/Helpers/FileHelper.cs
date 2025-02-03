@@ -23,13 +23,5 @@ namespace Fiap.FileCut.Infra.Storage.Shared.Helpers
 		{
 			return !string.IsNullOrWhiteSpace(fileName) && fileName.IndexOfAny(Path.GetInvalidFileNameChars()) < 0;
 		}
-
-		public static void ValidateFile(IFormFile file)
-		{
-			if (file == null || file.Length == 0)
-			{
-				throw new ArgumentException("File cannot be null or empty.");
-			}
-		}
 	}
 }

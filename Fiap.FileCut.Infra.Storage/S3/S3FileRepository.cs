@@ -196,7 +196,7 @@ public class S3FileRepository : IFileRepository
 		}
 	}
 
-	public async Task<IList<string>> ListFileNamesAsync(Guid userId, CancellationToken cancellationToken = default)
+	public async Task<IList<string>> ListFileNamesAsync(Guid userId, CancellationToken cancellationToken)
 	{
 		try
 		{
