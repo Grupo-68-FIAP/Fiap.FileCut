@@ -117,7 +117,7 @@ public class S3FileRepository : IFileRepository
 
 			_logger.LogInformation("[{source}] - Starting file upload/update. User: {UserId}, File: {FileName}", nameof(S3FileRepository), userId, file.FileName);
 
-			var key = S3Helper.GetS3Key(userId, file.FileName);
+			var key = S3KeyGenerator.GetS3Key(userId, file.FileName);
 			using var stream = file.OpenReadStream();
 
 			var request = new PutObjectRequest
@@ -162,7 +162,7 @@ public class S3FileRepository : IFileRepository
 
 			_logger.LogInformation("[{source}] - Starting file deletion. User: {UserId}, File: {FileName}", nameof(S3FileRepository), userId, fileName);
 
-			var key = S3Helper.GetS3Key(userId, fileName);
+			var key = S3KeyGenerator.GetS3Key(userId, fileName);
 			var request = new DeleteObjectRequest
 			{
 				BucketName = _bucketName,

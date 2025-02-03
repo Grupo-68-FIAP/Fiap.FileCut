@@ -223,4 +223,78 @@ public class FileServiceUnitTests
 		fileRepositoryMock.Verify(repo => repo.GetAllAsync(userId, cancellationToken), Times.Once);
 	}
 
+	[Fact]
+	public async Task SaveFileAsync_WhenFileIsValid_ShouldSaveFileAndReturnTrue()
+	{
+		// Arrange
+		var userId = Guid.NewGuid();
+		var fileMock = new Mock<IFormFile>();
+		fileMock.Setup(file => file.FileName).Returns("testfile.txt");
+		fileMock.Setup(file => file.Length).Returns(10);
+
+		var cancellationToken = CancellationToken.None;
+		var fileRepositoryMock = new Mock<IFileRepository>();
+		fileRepositoryMock
+			.Setup(repo => repo.UpdateAsync(userId, fileMock.Object, cancellationToken))
+			.ReturnsAsync(true);
+
+		var fileService = new FileService(fileRepositoryMock.Object, Mock.Of<ILogger<FileService>>());
+
+		// Act
+		var result = await fileService.SaveFileAsync(userId, fileMock.Object, cancellationToken);
+
+		// Assert
+		Assert.True(result);
+		fileRepositoryMock.Verify(repo => repo.UpdateAsync(userId, fileMock.Object, cancellationToken), Times.Once);
+	}
+
+	[Fact]
+	public async Task SaveFileAsync_WhenSaveFails_ShouldReturnFalse()
+	{
+		// Arrange
+		var userId = Guid.NewGuid();
+		var fileMock = new Mock<IFormFile>();
+		fileMock.Setup(file => file.FileName).Returns("testfile.txt");
+		fileMock.Setup(file => file.Length).Returns(10);
+
+		var cancellationToken = CancellationToken.None;
+		var fileRepositoryMock = new Mock<IFileRepository>();
+		fileRepositoryMock
+			.Setup(repo => repo.UpdateAsync(userId, fileMock.Object, cancellationToken))
+			.ReturnsAsync(false); 
+
+		var fileService = new FileService(fileRepositoryMock.Object, Mock.Of<ILogger<FileService>>());
+
+		// Act
+		var result = await fileService.SaveFileAsync(userId, fileMock.Object, cancellationToken);
+
+		// Assert
+		Assert.False(result);
+		fileRepositoryMock.Verify(repo => repo.UpdateAsync(userId, fileMock.Object, cancellationToken), Times.Once);
+	}
+
+	[Fact]
+	public async Task SaveFileAsync_WhenUnexpectedErrorOccurs_ShouldThrowInvalidOperationException()
+	{
+		// Arrange
+		var userId = Guid.NewGuid();
+		var fileMock = new Mock<IFormFile>();
+		fileMock.Setup(file => file.FileName).Returns("testfile.txt");
+		fileMock.Setup(file => file.Length).Returns(10); 
+
+		var cancellationToken = CancellationToken.None;
+		var fileRepositoryMock = new Mock<IFileRepository>();
+		fileRepositoryMock
+			.Setup(repo => repo.UpdateAsync(userId, fileMock.Object, cancellationToken))
+			.ThrowsAsync(new Exception("Simulação de erro")); 
+
+		var fileService = new FileService(fileRepositoryMock.Object, Mock.Of<ILogger<FileService>>());
+
+		// Act & Assert
+		var exception = await Assert.ThrowsAsync<InvalidOperationException>(async () =>
+			await fileService.SaveFileAsync(userId, fileMock.Object, cancellationToken));
+
+		Assert.Equal($"[{nameof(FileService)}] - Unexpected error while saving file. User: {userId}, File: testfile.txt", exception.Message);
+		fileRepositoryMock.Verify(repo => repo.UpdateAsync(userId, fileMock.Object, cancellationToken), Times.Once);
+	}
 }
