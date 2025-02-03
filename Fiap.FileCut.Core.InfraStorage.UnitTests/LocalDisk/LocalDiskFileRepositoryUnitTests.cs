@@ -1,11 +1,6 @@
 ﻿using Fiap.FileCut.Infra.Storage.LocalDisk;
 using Microsoft.AspNetCore.Http;
 using Moq;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace Fiap.FileCut.Core.InfraStorage.UnitTests.LocalDisk
 {
@@ -36,6 +31,30 @@ namespace Fiap.FileCut.Core.InfraStorage.UnitTests.LocalDisk
 			// Assert
 			Assert.True(result);
 			Assert.False(File.Exists(Path.Combine(userFolderPath, fileName)));
+		}
+
+		[Fact]
+		public async Task DeleteAsync_WhenExceptionOccurs_ShouldThrowInvalidOperationException()
+		{
+			// Arrange
+			var userId = Guid.NewGuid();
+			var fileName = "testfile.txt";
+			var cancellationToken = CancellationToken.None;
+			var userFolderPath = Path.Combine(Directory.GetCurrentDirectory(), "LocalStorage", userId.ToString());
+			Directory.CreateDirectory(userFolderPath);
+
+			var filePath = Path.Combine(userFolderPath, fileName);
+			File.WriteAllText(filePath, "test content");
+
+			File.SetAttributes(filePath, FileAttributes.ReadOnly);
+
+			// Act & Assert
+			var exception = await Assert.ThrowsAsync<InvalidOperationException>(async () =>
+			{
+				await _fileRepository.DeleteAsync(userId, fileName, cancellationToken);
+			});
+
+			Assert.Contains($"Failed to delete file {fileName} for user {userId}.", exception.Message);
 		}
 
 		[Fact]
@@ -76,6 +95,44 @@ namespace Fiap.FileCut.Core.InfraStorage.UnitTests.LocalDisk
 		}
 
 		[Fact]
+		public async Task ListFileNamesAsync_WhenUserIdIsEmpty_ShouldThrowArgumentException()
+		{
+			// Arrange
+			var userId = Guid.Empty;
+			var cancellationToken = CancellationToken.None;
+
+			// Act & Assert
+			var exception = await Assert.ThrowsAsync<ArgumentException>(async () =>
+			{
+				await _fileRepository.ListFileNamesAsync(userId, cancellationToken);
+			});
+
+			// Verificar a mensagem de exceção
+			Assert.Contains("User ID cannot be empty.", exception.Message);
+		}
+
+		[Fact]
+		public async Task ListFileNamesAsync_WhenDirectoryDoesNotExist_ShouldReturnEmptyList()
+		{
+			// Arrange
+			var userId = Guid.NewGuid();
+			var cancellationToken = CancellationToken.None;
+			var userFolderPath = Path.Combine(Directory.GetCurrentDirectory(), "LocalStorage", userId.ToString());
+
+			if (Directory.Exists(userFolderPath))
+			{
+				Directory.Delete(userFolderPath, true);
+			}
+
+			// Act
+			var result = await _fileRepository.ListFileNamesAsync(userId, cancellationToken);
+
+			// Assert
+			Assert.NotNull(result);
+			Assert.Empty(result); 
+		}
+
+		[Fact]
 		public async Task GetAllAsync_WhenFilesExist_ShouldReturnFileList()
 		{
 			// Arrange
@@ -93,6 +150,27 @@ namespace Fiap.FileCut.Core.InfraStorage.UnitTests.LocalDisk
 			// Assert
 			Assert.NotNull(result);
 			Assert.Equal(2, result.Count);
+		}
+
+		[Fact]
+		public async Task GetAllAsync_WhenDirectoryDoesNotExist_ShouldReturnEmptyList()
+		{
+			// Arrange
+			var userId = Guid.NewGuid(); 
+			var cancellationToken = CancellationToken.None;
+			var userFolderPath = Path.Combine(Directory.GetCurrentDirectory(), "LocalStorage", userId.ToString());
+
+			if (Directory.Exists(userFolderPath))
+			{
+				Directory.Delete(userFolderPath, true);
+			}
+
+			// Act
+			var result = await _fileRepository.GetAllAsync(userId, cancellationToken);
+
+			// Assert
+			Assert.NotNull(result);
+			Assert.Empty(result); 
 		}
 
 		[Fact]
