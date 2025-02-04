@@ -1,4 +1,5 @@
 ﻿using Fiap.FileCut.Core.Interfaces.Repository;
+using Fiap.FileCut.Core.Interfaces.Services;
 using Fiap.FileCut.Core.Services;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Http.Internal;
@@ -17,13 +18,14 @@ public class FileServiceUnitTests
 		var fileName = "testfile.txt";
 		var cancellationToken = CancellationToken.None;
 
+		var notifyService = new Mock<INotifyService>();
 		var fileRepositoryMock = new Mock<IFileRepository>();
 		fileRepositoryMock
 			.Setup(repo => repo.DeleteAsync(userId, fileName, cancellationToken))
 			.ReturnsAsync(true);
 
 		var loggerMock = new Mock<ILogger<FileService>>();
-		var fileService = new FileService(fileRepositoryMock.Object, loggerMock.Object);
+		var fileService = new FileService(fileRepositoryMock.Object, notifyService.Object, loggerMock.Object);
 
 		// Act
 		var result = await fileService.DeleteFileAsync(userId, fileName, cancellationToken);
@@ -41,13 +43,15 @@ public class FileServiceUnitTests
 		var fileName = "testfile.txt";
 		var cancellationToken = CancellationToken.None;
 
+		var notifyService = new Mock<INotifyService>();
+
 		var fileRepositoryMock = new Mock<IFileRepository>();
 		fileRepositoryMock
 			.Setup(repo => repo.DeleteAsync(userId, fileName, cancellationToken))
 			.ReturnsAsync(false); 
 
 		var loggerMock = new Mock<ILogger<FileService>>();
-		var fileService = new FileService(fileRepositoryMock.Object, loggerMock.Object);
+		var fileService = new FileService(fileRepositoryMock.Object, notifyService.Object, loggerMock.Object);
 
 		// Act
 		var result = await fileService.DeleteFileAsync(userId, fileName, cancellationToken);
@@ -64,6 +68,7 @@ public class FileServiceUnitTests
 		var userId = Guid.NewGuid();
 		var fileName = "testfile.txt";
 		var cancellationToken = CancellationToken.None;
+		var notifyService = new Mock<INotifyService>();
 
 		var fileRepositoryMock = new Mock<IFileRepository>();
 		fileRepositoryMock
@@ -71,7 +76,7 @@ public class FileServiceUnitTests
 			.ThrowsAsync(new Exception("Simulação de erro"));
 
 		var loggerMock = new Mock<ILogger<FileService>>();
-		var fileService = new FileService(fileRepositoryMock.Object, loggerMock.Object);
+		var fileService = new FileService(fileRepositoryMock.Object, notifyService.Object, loggerMock.Object);
 
 		// Act & Assert
 		var exception = await Assert.ThrowsAsync<InvalidOperationException>(async () =>
@@ -89,6 +94,8 @@ public class FileServiceUnitTests
 		var fileName = "testfile.txt";
 		var cancellationToken = CancellationToken.None;
 
+		var notifyService = new Mock<INotifyService>();
+
 		var fileRepositoryMock = new Mock<IFileRepository>();
 		var fileMock = new Mock<IFormFile>();
 		fileRepositoryMock
@@ -96,7 +103,7 @@ public class FileServiceUnitTests
 			.ReturnsAsync(fileMock.Object);
 
 		var loggerMock = new Mock<ILogger<FileService>>();
-		var fileService = new FileService(fileRepositoryMock.Object, loggerMock.Object);
+		var fileService = new FileService(fileRepositoryMock.Object, notifyService.Object, loggerMock.Object);
 
 		var result = await fileService.GetFileAsync(userId, fileName, cancellationToken);
 
@@ -113,10 +120,10 @@ public class FileServiceUnitTests
 		var cancellationToken = CancellationToken.None;
 
 		var fileRepositoryMock = new Mock<IFileRepository>();
-
+		var notifyService = new Mock<INotifyService>();
 
 		var loggerMock = new Mock<ILogger<FileService>>();
-		var fileService = new FileService(fileRepositoryMock.Object, loggerMock.Object);
+		var fileService = new FileService(fileRepositoryMock.Object, notifyService.Object, loggerMock.Object);
 
 		// Act & Assert
 		var exception = await Assert.ThrowsAsync<FileNotFoundException>(async () =>
@@ -134,13 +141,15 @@ public class FileServiceUnitTests
 		var fileName = "testfile.txt";
 		var cancellationToken = CancellationToken.None;
 
+		var notifyService = new Mock<INotifyService>();
+
 		var fileRepositoryMock = new Mock<IFileRepository>();
 		fileRepositoryMock
 			.Setup(repo => repo.GetAsync(userId, fileName, cancellationToken))
 			.ThrowsAsync(new Exception("Simulação de erro"));
 
 		var loggerMock = new Mock<ILogger<FileService>>();
-		var fileService = new FileService(fileRepositoryMock.Object, loggerMock.Object);
+		var fileService = new FileService(fileRepositoryMock.Object, notifyService.Object, loggerMock.Object);
 
 		// Act & Assert
 		var exception = await Assert.ThrowsAsync<Exception>(async () =>
@@ -156,6 +165,8 @@ public class FileServiceUnitTests
 		var userId = Guid.NewGuid();
 		var cancellationToken = CancellationToken.None;
 
+		var notifyService = new Mock<INotifyService>();
+
 		var fileRepositoryMock = new Mock<IFileRepository>();
 		var fileList = new List<IFormFile>
 		{
@@ -167,7 +178,7 @@ public class FileServiceUnitTests
 			.Setup(repo => repo.GetAllAsync(userId, cancellationToken))
 			.ReturnsAsync(fileList);
 
-		var fileService = new FileService(fileRepositoryMock.Object, Mock.Of<ILogger<FileService>>());
+		var fileService = new FileService(fileRepositoryMock.Object, notifyService.Object, Mock.Of<ILogger<FileService>>());
 
 		// Act & Assert
 		var result = await fileService.GetFileNamesAsync(userId, cancellationToken);
@@ -184,6 +195,7 @@ public class FileServiceUnitTests
 		// Arrange
 		var userId = Guid.NewGuid();
 		var cancellationToken = CancellationToken.None;
+		var notifyService = new Mock<INotifyService>();
 
 		var fileRepositoryMock = new Mock<IFileRepository>();
 		fileRepositoryMock
@@ -191,7 +203,7 @@ public class FileServiceUnitTests
 			.ReturnsAsync(new List<IFormFile>());
 
 		// Act & Assert
-		var fileService = new FileService(fileRepositoryMock.Object, Mock.Of<ILogger<FileService>>());
+		var fileService = new FileService(fileRepositoryMock.Object, notifyService.Object, Mock.Of<ILogger<FileService>>());
 
 		var result = await fileService.GetFileNamesAsync(userId, cancellationToken);
 
@@ -205,13 +217,14 @@ public class FileServiceUnitTests
 		// Arrange
 		var userId = Guid.NewGuid();
 		var cancellationToken = CancellationToken.None;
+		var notifyService = new Mock<INotifyService>();
 
 		var fileRepositoryMock = new Mock<IFileRepository>();
 		fileRepositoryMock
 			.Setup(repo => repo.GetAllAsync(userId, cancellationToken))
 			.ThrowsAsync(new Exception("Simulação de erro"));
 
-		var fileService = new FileService(fileRepositoryMock.Object, Mock.Of<ILogger<FileService>>());
+		var fileService = new FileService(fileRepositoryMock.Object, notifyService.Object, Mock.Of<ILogger<FileService>>());
 
 		// Act & Assert
 		var exception = await Assert.ThrowsAsync<InvalidOperationException>(async () =>
@@ -230,13 +243,15 @@ public class FileServiceUnitTests
 		fileMock.Setup(file => file.FileName).Returns("testfile.txt");
 		fileMock.Setup(file => file.Length).Returns(10);
 
+		var notifyService = new Mock<INotifyService>();
+
 		var cancellationToken = CancellationToken.None;
 		var fileRepositoryMock = new Mock<IFileRepository>();
 		fileRepositoryMock
 			.Setup(repo => repo.UpdateAsync(userId, fileMock.Object, cancellationToken))
 			.ReturnsAsync(true);
 
-		var fileService = new FileService(fileRepositoryMock.Object, Mock.Of<ILogger<FileService>>());
+		var fileService = new FileService(fileRepositoryMock.Object, notifyService.Object, Mock.Of<ILogger<FileService>>());
 
 		// Act
 		var result = await fileService.SaveFileAsync(userId, fileMock.Object, cancellationToken);
@@ -255,13 +270,15 @@ public class FileServiceUnitTests
 		fileMock.Setup(file => file.FileName).Returns("testfile.txt");
 		fileMock.Setup(file => file.Length).Returns(10);
 
+		var notifyService = new Mock<INotifyService>();
+
 		var cancellationToken = CancellationToken.None;
 		var fileRepositoryMock = new Mock<IFileRepository>();
 		fileRepositoryMock
 			.Setup(repo => repo.UpdateAsync(userId, fileMock.Object, cancellationToken))
 			.ReturnsAsync(false); 
 
-		var fileService = new FileService(fileRepositoryMock.Object, Mock.Of<ILogger<FileService>>());
+		var fileService = new FileService(fileRepositoryMock.Object, notifyService.Object, Mock.Of<ILogger<FileService>>());
 
 		// Act
 		var result = await fileService.SaveFileAsync(userId, fileMock.Object, cancellationToken);
@@ -278,7 +295,9 @@ public class FileServiceUnitTests
 		var userId = Guid.NewGuid();
 		var fileMock = new Mock<IFormFile>();
 		fileMock.Setup(file => file.FileName).Returns("testfile.txt");
-		fileMock.Setup(file => file.Length).Returns(10); 
+		fileMock.Setup(file => file.Length).Returns(10);
+
+		var notifyService = new Mock<INotifyService>();
 
 		var cancellationToken = CancellationToken.None;
 		var fileRepositoryMock = new Mock<IFileRepository>();
@@ -286,7 +305,7 @@ public class FileServiceUnitTests
 			.Setup(repo => repo.UpdateAsync(userId, fileMock.Object, cancellationToken))
 			.ThrowsAsync(new Exception("Simulação de erro")); 
 
-		var fileService = new FileService(fileRepositoryMock.Object, Mock.Of<ILogger<FileService>>());
+		var fileService = new FileService(fileRepositoryMock.Object, notifyService.Object, Mock.Of<ILogger<FileService>>());
 
 		// Act & Assert
 		var exception = await Assert.ThrowsAsync<InvalidOperationException>(async () =>

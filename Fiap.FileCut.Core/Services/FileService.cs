@@ -1,5 +1,6 @@
 using Fiap.FileCut.Core.Interfaces.Repository;
 using Fiap.FileCut.Core.Interfaces.Services;
+using Fiap.FileCut.Core.Objects;
 using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.Logging;
 
@@ -9,12 +10,15 @@ public class FileService : IFileService
 {
 	private readonly IFileRepository _fileRepository;
 	private readonly ILogger<FileService> _logger;
+	private readonly INotifyService _notifyService;
 
 	public FileService(
 		IFileRepository fileRepository,
+		INotifyService notifyService,
 		ILogger<FileService> logger)
 	{
 		_fileRepository = fileRepository;
+		_notifyService = notifyService;
 		_logger = logger;
 	}
 
@@ -104,16 +108,16 @@ public class FileService : IFileService
 			_logger.LogInformation(infoMessageTemplate, nameof(FileService), userId, file.FileName);
 
 			var result = await _fileRepository.UpdateAsync(userId, file, cancellationToken);
-			if (result)
+			if (!result)
 			{
-				const string successMessageTemplate = "[{Source}] - File saved successfully. User: {UserId}, File: {FileName}";
-				_logger.LogInformation(successMessageTemplate, nameof(FileService), userId, file.FileName);
+				_logger.LogWarning("[{source}] - Failed to save file. User: {UserId}, File: {FileName}", nameof(FileService), userId, file.FileName);
+				return result;
 			}
-			else
-			{
-				const string warningMessageTemplate = "[{Source}] - Failed to save file. User: {UserId}, File: {FileName}";
-				_logger.LogWarning(warningMessageTemplate, nameof(FileService), userId, file.FileName);
-			}
+
+			_logger.LogInformation("[{source}] - File saved successfully. User: {UserId}, File: {FileName}", nameof(FileService), userId, file.FileName);
+
+			var messageContext = new NotifyContext<string>("Teste", Guid.NewGuid());
+			await _notifyService.NotifyAsync(messageContext);
 
 			return result;
 		}
