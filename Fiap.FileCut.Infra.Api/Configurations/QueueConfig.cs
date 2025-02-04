@@ -1,10 +1,14 @@
-﻿using Fiap.FileCut.Core.Interfaces.Handlers;
+﻿using Fiap.FileCut.Core.Attributes;
+using Fiap.FileCut.Core.Extensions;
+using Fiap.FileCut.Core.Interfaces.Adapters;
+using Fiap.FileCut.Core.Interfaces.Handlers;
 using Fiap.FileCut.Core.Interfaces.Services;
 using Fiap.FileCut.Core.Objects;
 using Fiap.FileCut.Infra.RabbitMq;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using RabbitMQ.Client;
+using System.Reflection;
 using static Fiap.FileCut.Infra.Api.Configurations.NotificationConfig;
 
 namespace Fiap.FileCut.Infra.Api.Configurations;
@@ -17,7 +21,6 @@ public static class QueueConfig
 
     private static readonly List<Func<IServiceScope, Task>> queueActions = [];
 
-    #region Consumers
     public static async Task AddQueue(this IServiceCollection services, Action<QueueBuilder> conf)
     {
         var connectionString = Environment.GetEnvironmentVariable("RABBITMQ_CONNECTION_STRING");
@@ -29,7 +32,9 @@ public static class QueueConfig
 
         services.AddSingleton<IConnection>(sp => connection);
         services.AddSingleton<IChannel>(sp => channel);
-        services.AddScoped<IMessagingConsumerService, RabbitMqConsumerService>();
+
+        services.AddSingleton<IMessagingConsumerService, RabbitMqConsumerService>();
+        services.AddSingleton<IMessagingPublisherService, RabbitMqPublisherService>();
         conf(new QueueBuilder(services));
     }
 
@@ -39,26 +44,46 @@ public static class QueueConfig
 
         public QueueBuilder SubscribeQueue<T, TImplementation>()
             where T : class
-            where TImplementation : class, IMessageHandler<T>
+            where TImplementation : class, IConsumerHandler<T>
         {
-            // TODO NOSONAR: Talvez criar um Attribute para definir o nome da fila no objeto colocando esse fullname coalesce
             var queueName = typeof(T).FullName;
+            
+            var props = Attribute.GetCustomAttributes(typeof(T));
+
+            foreach (object attr in props)
+            {
+                if (attr is MessageQueueAttribute a)
+                {
+                    queueName = a.Queue.GetQueueNameAttribute();
+                    break;
+                }
+            }
+
             ArgumentNullException.ThrowIfNull(queueName);
+
             return SubscribeQueue<T, TImplementation>(queueName);
         }
 
-        public QueueBuilder SubscribeQueue<T, TImplementation>(string queueName)
-            where T : class
-            where TImplementation : class, IMessageHandler<T>
+        public QueueBuilder AddPublisher<T>()
+            where T : class, INotifyAdapter
         {
-            _services.AddScoped<IMessageHandler<T>, TImplementation>();
+            _services.AddScoped<INotifyAdapter, T>();
+
+            return this;
+        }
+
+        private QueueBuilder SubscribeQueue<T, TImplementation>(string queueName)
+            where T : class
+            where TImplementation : class, IConsumerHandler<T>
+        {
+            _services.AddScoped<IConsumerHandler<T>, TImplementation>();
             queueActions.Add(async (scope) => await SubscribeQueue<T>(scope, queueName));
             return this;
         }
 
         private static async Task SubscribeQueue<T>(IServiceScope scope, string queueName) where T : class
         {
-            var consumer = scope.ServiceProvider.GetRequiredService<IMessageHandler<T>>();
+            var consumer = scope.ServiceProvider.GetRequiredService<IConsumerHandler<T>>();
             var consumerService = scope.ServiceProvider.GetRequiredService<IMessagingConsumerService>();
             await consumerService.SubscribeAsync(queueName, consumer);
         }
@@ -71,17 +96,4 @@ public static class QueueConfig
             await action(scope);
         }
     }
-    #endregion Consumers
-
-    #region Publishers
-    public static async Task AddQueuePublisher(this IServiceCollection services, Action<QueueBuilder> conf)
-    {
-        var openIdAuthority = Environment.GetEnvironmentVariable("RABBITMQ_CONNECTION_STRING");
-        ArgumentNullException.ThrowIfNull(openIdAuthority);
-        await services.AddRabbitMQ(openIdAuthority);
-        services.AddScoped<IMessagingPublisherService, RabbitMqPublisherService>();
-        conf(new QueueBuilder(services));
-    }
-
-    #endregion Publishers
 }

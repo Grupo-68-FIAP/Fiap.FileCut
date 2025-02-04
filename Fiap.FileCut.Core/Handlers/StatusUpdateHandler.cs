@@ -8,7 +8,7 @@ namespace Fiap.FileCut.Core.Handlers;
 public class StatusUpdateHandler(
     INotifyService notifyService,
     IUserService userService,
-    ILogger<StatusUpdateHandler> logger) : IMessageHandler<string>
+    ILogger<StatusUpdateHandler> logger) : IConsumerHandler<string>
 {
     public async Task HandleAsync(NotifyContext<string> context)
     {

@@ -37,13 +37,6 @@ public static class NotificationConfig
             return this;
         }
 
-        public NotificationBuilder MessagingPublisherNotify()
-        {
-            _services.AddScoped<INotifyAdapter, RabbitMqPublisherService>();
-
-            return this;
-        }
-
         private static bool SmtpConfigure(IServiceCollection services, IConfiguration configuration)
         {
             var smtpServer = Environment.GetEnvironmentVariable("SMTP_SERVER");
