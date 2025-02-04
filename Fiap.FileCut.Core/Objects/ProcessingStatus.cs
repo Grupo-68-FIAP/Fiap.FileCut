@@ -1,3 +1,5 @@
+namespace Fiap.FileCut.Core.Objects;
+
 public class ProcessingStatus
 {
     public Guid UserId { get; set; }

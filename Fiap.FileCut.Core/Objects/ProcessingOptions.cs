@@ -1,3 +1,5 @@
+namespace Fiap.FileCut.Core.Objects;
+
 public class ProcessingOptions
 {
     public const string SectionName = "Processing";
