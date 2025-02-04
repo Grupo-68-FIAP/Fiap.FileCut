@@ -1,7 +1,6 @@
-﻿using Fiap.FileCut.Core.Handlers;
-using Fiap.FileCut.Core.Objects;
+﻿using Fiap.FileCut.Core.Adapters;
+using Fiap.FileCut.Core.Objects.QueueEvents;
 using Fiap.FileCut.Infra.Api.Configurations;
-using Fiap.FileCut.Infra.RabbitMq;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.Extensions.DependencyInjection;
 
@@ -14,12 +13,12 @@ namespace Fiap.FileCut.Infra.Api
             services.AddJwtBearerAuthentication();
             services.AddSwaggerFC();
             services.AddEnvCors();
-            services.AddNotifications();              
+            services.AddNotifications();
 
             await services.AddQueue(cfg =>
             {
-                //cfg.SubscribeQueue<string, StringSubscriberHandler>();
-                //cfg.AddPublisher<StringPublisherHandler>();
+                cfg.AddPublisher<VideoUploadedEvent, VideoUploadedQueuePublish>();
+                cfg.AddPublisher<UserNotifyEvent, UserNotifyQueuePublish>();
             });
         }
 

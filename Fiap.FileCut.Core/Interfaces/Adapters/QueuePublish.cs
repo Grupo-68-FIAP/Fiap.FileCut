@@ -14,7 +14,7 @@ namespace Fiap.FileCut.Core.Interfaces.Adapters
 
         public async Task NotifyAsync<T1>(NotifyContext<T1> notifyContext)
         {
-            if (notifyContext.Context is T t)
+            if (notifyContext.Value is T t)
                 await PublishAsync(notifyContext.Convert(t));
         }
 

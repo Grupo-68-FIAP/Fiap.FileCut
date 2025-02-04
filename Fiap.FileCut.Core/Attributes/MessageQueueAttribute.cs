@@ -1,4 +1,4 @@
-﻿using Fiap.FileCut.Core.Enums;
+﻿using Fiap.FileCut.Core.Objects.Enums;
 
 namespace Fiap.FileCut.Core.Attributes;
 public class MessageQueueAttribute : Attribute

@@ -22,9 +22,9 @@ namespace Fiap.FileCut.Infra.RabbitMq
 
         public async Task PublishMessage<T>(NotifyContext<T> context)
         {
-            ArgumentNullException.ThrowIfNull(context.Context);
+            ArgumentNullException.ThrowIfNull(context.Value);
 
-            var queue = context.Context.GetType().FullName;
+            var queue = context.Value.GetType().FullName;
 
             var props = Attribute.GetCustomAttributes(typeof(T));
 
@@ -49,9 +49,9 @@ namespace Fiap.FileCut.Infra.RabbitMq
                 arguments: null
             );
 
-            var body = Encoding.UTF8.GetBytes(JsonSerializer.Serialize(context.Context));
+            var body = Encoding.UTF8.GetBytes(JsonSerializer.Serialize(context.Value));
 
-            _logger.LogInformation("[{Queue}] Message body prepared: {Body}", queue, body);
+            _logger.LogInformation("[{Queue}] VideoName body prepared: {Body}", queue, body);
 
             var properties = new BasicProperties();
             properties.Headers = new Dictionary<string, object?>
@@ -67,7 +67,7 @@ namespace Fiap.FileCut.Infra.RabbitMq
                 basicProperties: properties
             );
 
-            _logger.LogInformation("[{Queue}] Message sent: {Body}", queue, body);
+            _logger.LogInformation("[{Queue}] VideoName sent: {Body}", queue, body);
         }
     }
 }

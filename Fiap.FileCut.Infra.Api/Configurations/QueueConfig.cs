@@ -3,13 +3,9 @@ using Fiap.FileCut.Core.Extensions;
 using Fiap.FileCut.Core.Interfaces.Adapters;
 using Fiap.FileCut.Core.Interfaces.Handlers;
 using Fiap.FileCut.Core.Interfaces.Services;
-using Fiap.FileCut.Core.Objects;
 using Fiap.FileCut.Infra.RabbitMq;
-using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using RabbitMQ.Client;
-using System.Reflection;
-using static Fiap.FileCut.Infra.Api.Configurations.NotificationConfig;
 
 namespace Fiap.FileCut.Infra.Api.Configurations;
 
@@ -47,7 +43,7 @@ public static class QueueConfig
             where TImplementation : class, IConsumerHandler<T>
         {
             var queueName = typeof(T).FullName;
-            
+
             var props = Attribute.GetCustomAttributes(typeof(T));
 
             foreach (object attr in props)
@@ -64,7 +60,7 @@ public static class QueueConfig
             return SubscribeQueue<T, TImplementation>(queueName);
         }
 
-        public QueueBuilder AddPublisher<T , TImplementation>()
+        public QueueBuilder AddPublisher<T, TImplementation>()
             where T : class
             where TImplementation : QueuePublish<T>
         {
