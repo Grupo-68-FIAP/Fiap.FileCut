@@ -4,11 +4,8 @@ namespace Fiap.FileCut.Core.Interfaces.Services;
 
 public interface IFileService
 {
-    Task<List<string>> GetAllFilesName(Guid userId);
-
-    Task<IFormFile> GetFileAsync(Guid userId, string fileName);
-
-    Task<bool> SaveFileAsync(Guid userId, IFormFile file);
-
-    Task<bool> DeleteFileAsync(Guid userId, string fileName);
+    Task<IFormFile> GetFileAsync(Guid userId, string fileName, CancellationToken cancellationToken);
+	Task<IList<string>> GetFileNamesAsync(Guid userId, CancellationToken cancellationToken);
+	Task<bool> SaveFileAsync(Guid userId, IFormFile file, CancellationToken cancellationToken);
+	Task<bool> DeleteFileAsync(Guid userId, string fileName, CancellationToken cancellationToken);
 }
