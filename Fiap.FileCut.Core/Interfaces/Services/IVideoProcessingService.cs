@@ -10,7 +10,6 @@ namespace Fiap.FileCut.Core.Interfaces.Services
     {
        Task ProcessVideoAsync(
         string videoPath,
-        Guid userId,
-        CancellationToken cancellationToken = default);
+        Guid userId);
     }
 }

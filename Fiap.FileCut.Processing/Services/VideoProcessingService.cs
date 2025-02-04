@@ -23,19 +23,18 @@ public class VideoProcessingService : IVideoProcessingService
 
     public async Task ProcessVideoAsync(
         string videoPath, 
-        Guid userId, 
-        CancellationToken cancellationToken = default)
+        Guid userId)
     {
         try
         {
             // Gerar identificador único para o processamento
-            var processingId = DateTime.Now.ToString("yyyyMMddHHmmss");
+            var processId = Guid.NewGuid();
 
             // Criar estrutura de diretórios
             var processingFolder = Path.Combine(
                 _options.WorkingDirectory, 
                 userId.ToString(), 
-                $"processing_{processingId}");
+                $"processing_{processId}");
 
             // Configuração de Diretório
             var outputFolder = Path.Combine(processingFolder, "frames");
@@ -49,8 +48,7 @@ public class VideoProcessingService : IVideoProcessingService
 
             var videoInfo = await FFProbe.AnalyseAsync(
                 videoPath, 
-                analysisOptions, 
-                cancellationToken);
+                analysisOptions);
 
             // Parâmetros de Processamento
             var duration = videoInfo.Duration;
@@ -72,8 +70,7 @@ public class VideoProcessingService : IVideoProcessingService
             // Criação do ZIP
            var zipFileName = _options.ZipFileNameFormat
             .Replace("{userId}", userId.ToString())
-            .Replace("{timestamp}", processingId)
-            .Replace("{guid}", Guid.NewGuid().ToString());
+            .Replace("{processId}", processId.ToString());        
 
             var zipFilePath = Path.Combine(processingFolder, $"{zipFileName}.zip");
             ZipFile.CreateFromDirectory(outputFolder, zipFilePath);
