@@ -5,12 +5,12 @@ using Microsoft.Extensions.Logging;
 
 namespace Fiap.FileCut.Core.Handlers;
 
-public class StatusUpdateHandler(
+public class UpdateStatusConsumerHandler(
     INotifyService notifyService,
     IUserService userService,
-    ILogger<StatusUpdateHandler> logger) : IConsumerHandler<string>
+    ILogger<UpdateStatusConsumerHandler> logger) : IConsumerHandler<InformationMessageEvents>
 {
-    public async Task HandleAsync(NotifyContext<string> context)
+    public async Task HandleAsync(NotifyContext<InformationMessageEvents> context)
     {
         logger.LogDebug("Status do usuario {UserId} atualizado: {Status}", context.UserId, context.Context);
 

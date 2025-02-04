@@ -64,11 +64,11 @@ public static class QueueConfig
             return SubscribeQueue<T, TImplementation>(queueName);
         }
 
-        public QueueBuilder AddPublisher<T>()
-            where T : class, INotifyAdapter
+        public QueueBuilder AddPublisher<T , TImplementation>()
+            where T : class
+            where TImplementation : QueuePublish<T>
         {
-            _services.AddScoped<INotifyAdapter, T>();
-
+            _services.AddScoped<INotifyAdapter, TImplementation>();
             return this;
         }
 

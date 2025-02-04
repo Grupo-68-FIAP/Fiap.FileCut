@@ -18,8 +18,8 @@ namespace Fiap.FileCut.Infra.Api
 
             await services.AddQueue(cfg =>
             {
-                cfg.SubscribeQueue<string, StringSubscriberHandler>();
-                cfg.AddPublisher<StringPublisherHandler>();
+                //cfg.SubscribeQueue<string, StringSubscriberHandler>();
+                //cfg.AddPublisher<StringPublisherHandler>();
             });
         }
 

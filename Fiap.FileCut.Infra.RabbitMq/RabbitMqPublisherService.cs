@@ -20,15 +20,7 @@ namespace Fiap.FileCut.Infra.RabbitMq
             _logger = logger;
         }
 
-        public async Task NotifyAsync<T>(NotifyContext<T> context)
-        {
-            //if (context.Context is BaseMessageEvent message)
-           await PublishMessage(context);
-
-            //return Task.CompletedTask;
-        }
-
-        private async Task PublishMessage<T>(NotifyContext<T> context)
+        public async Task PublishMessage<T>(NotifyContext<T> context)
         {
             ArgumentNullException.ThrowIfNull(context.Context);
 

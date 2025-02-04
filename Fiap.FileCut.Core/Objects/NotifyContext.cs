@@ -16,4 +16,9 @@ public class NotifyContext<T> (T context, Guid userId)
     /// Id of user to notify.
     /// </summary>
     public readonly Guid UserId = userId;
+
+    public NotifyContext<T2> Convert<T2>(T2 context)
+    {
+        return new NotifyContext<T2>(context, UserId);
+    }
 }
