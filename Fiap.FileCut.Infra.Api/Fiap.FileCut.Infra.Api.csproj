@@ -22,6 +22,7 @@
 
 		<ItemGroup>
 		  <ProjectReference Include="..\Fiap.FileCut.Core\Fiap.FileCut.Core.csproj" />
+		  <ProjectReference Include="..\Fiap.FileCut.Infra.IdentityProvider\Fiap.FileCut.Infra.IdentityProvider.csproj" />
 		  <ProjectReference Include="..\Fiap.FileCut.Infra.RabbitMq\Fiap.FileCut.Infra.RabbitMq.csproj" />
 		  <ProjectReference Include="..\Fiap.FileCut.Infra.Storage\Fiap.FileCut.Infra.Storage.csproj" />
 		</ItemGroup>

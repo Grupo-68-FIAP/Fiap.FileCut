@@ -3,11 +3,6 @@ using Fiap.FileCut.Core.Interfaces.Services;
 using Fiap.FileCut.Core.Objects;
 using Microsoft.Extensions.Logging;
 using Moq;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace Fiap.FileCut.Core.UnitTests.Handlers
 {
@@ -17,11 +12,13 @@ namespace Fiap.FileCut.Core.UnitTests.Handlers
         public async Task HandleAsync_WhenValidContext_ShouldNotify()
         {
             // Arrange
-            var userId = Guid.NewGuid();
+            var user = new User { Id = Guid.NewGuid(), Email = "user@test.com" };
             var notifyService = new Mock<INotifyService>();
+            var userService = new Mock<IUserService>();
+            userService.Setup(c => c.GetUserAsync(user.Id, default)).ReturnsAsync(user);
             var logger = new Mock<ILogger<StatusUpdateHandler>>();
-            var handler = new StatusUpdateHandler(notifyService.Object, logger.Object);
-            var context = new NotifyContext<string>("test", userId);
+            var handler = new StatusUpdateHandler(notifyService.Object, userService.Object, logger.Object);
+            var context = new NotifyContext<string>("test", user.Id);
             // Act
             await handler.HandleAsync(context);
             // Assert

@@ -5,9 +5,7 @@ namespace Fiap.FileCut.Core.Interfaces.Applications;
 
 public interface IGestaoApplication
 {
-    Task<List<VideoMetadata>> ListAllVideosAsync(Guid guid);
-
-    Task<VideoMetadata> GetVideoMetadataAsync(Guid guid, string videoName);
-
-    Task<IFormFile> GetVideoAsync(Guid guid, string videoName);
+    Task<List<VideoMetadata>> ListAllVideosAsync(Guid guid, CancellationToken cancellationToken);
+    Task<VideoMetadata> GetVideoMetadataAsync(Guid guid, string videoName, CancellationToken cancellationToken);
+    Task<IFormFile> GetVideoAsync(Guid guid, string videoName, CancellationToken cancellationToken);
 }
