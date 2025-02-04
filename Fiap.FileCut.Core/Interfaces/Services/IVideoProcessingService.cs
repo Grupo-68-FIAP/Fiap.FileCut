@@ -8,7 +8,9 @@ namespace Fiap.FileCut.Core.Interfaces.Services
 {
     public interface IVideoProcessingService
     {
-        Task ProcessarVideoAsync(string videoPath, string outputFolder, CancellationToken cancellationToken = default);
-        Task<byte[]> GerarThumbnailsZipAsync(string videoPath, TimeSpan interval, CancellationToken cancellationToken = default);
+       Task ProcessVideoAsync(
+        string videoPath,
+        Guid userId,
+        CancellationToken cancellationToken = default);
     }
 }

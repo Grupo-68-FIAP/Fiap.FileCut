@@ -1,109 +1,88 @@
 ﻿using Fiap.FileCut.Core.Interfaces.Services;
-using Fiap.FileCut.Core.Objects;
+using FFMpegCore;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
-using System;
-using System.Collections.Generic;
+using System.Drawing;
 using System.IO.Compression;
-using System.Linq;
-using FFMpegCore;
-using System.Text;
-using System.Threading.Tasks;
+using Fiap.FileCut.Processing.Exceptions;
 
-namespace Fiap.FileCut.Processing.Services
+namespace Fiap.FileCut.Processing.Services;
+
+public class VideoProcessingService : IVideoProcessingService
 {
-    public class VideoProcessingService : IVideoProcessingService
+    private readonly ILogger<VideoProcessingService> _logger;
+    private readonly ProcessingOptions _options;
+
+    public VideoProcessingService(
+        ILogger<VideoProcessingService> logger,
+        IOptions<ProcessingOptions> options)
     {
-        private readonly ILogger<VideoProcessingService> _logger;
-        private readonly VideoProcessingConfig _settings;
+        _logger = logger;
+        _options = options.Value;
+    }
 
-        public VideoProcessingService(
-            IOptions<VideoProcessingConfig> settings,
-            ILogger<VideoProcessingService> logger)
+    public async Task ProcessVideoAsync(
+        string videoPath, 
+        Guid userId, 
+        CancellationToken cancellationToken = default)
+    {
+        try
         {
-            _settings = settings.Value;
-            _logger = logger;
+            // Gerar identificador único para o processamento
+            var processingId = DateTime.Now.ToString("yyyyMMddHHmmss");
+
+            // Criar estrutura de diretórios
+            var processingFolder = Path.Combine(
+                _options.WorkingDirectory, 
+                userId.ToString(), 
+                $"processing_{processingId}");
+
+            // Configuração de Diretório
+            var outputFolder = Path.Combine(processingFolder, "frames");
+            Directory.CreateDirectory(outputFolder);
+
+            // Análise do Vídeo
+            var analysisOptions = new FFOptions { 
+                UseCache = true,
+                TemporaryFilesFolder = _options.WorkingDirectory
+            };
+
+            var videoInfo = await FFProbe.AnalyseAsync(
+                videoPath, 
+                analysisOptions, 
+                cancellationToken);
+
+            // Parâmetros de Processamento
+            var duration = videoInfo.Duration;
+            var interval = TimeSpan.FromSeconds(_options.FrameIntervalSeconds);
+
+            // Extração de Frames
+            for (var currentTime = TimeSpan.Zero; currentTime < duration; currentTime += interval)
+            {
+                // Geração do Frame
+                var outputPath = Path.Combine(outputFolder, $"frame_{currentTime.TotalSeconds}.jpg");
+                await FFMpeg.SnapshotAsync(
+                    videoPath, 
+                    outputPath, 
+                    new Size(_options.FrameWidth, _options.FrameHeight), 
+                    currentTime);
+            }
+
+
+            // Criação do ZIP
+           var zipFileName = _options.ZipFileNameFormat
+            .Replace("{userId}", userId.ToString())
+            .Replace("{timestamp}", processingId)
+            .Replace("{guid}", Guid.NewGuid().ToString());
+
+            var zipFilePath = Path.Combine(processingFolder, $"{zipFileName}.zip");
+            ZipFile.CreateFromDirectory(outputFolder, zipFilePath);
+
         }
-
-        public async Task ProcessarVideoAsync(string videoPath, string outputFolder, CancellationToken cancellationToken = default)
+        catch (Exception ex)
         {
-            try
-            {
-                _logger.LogInformation("Iniciando processamento do vídeo: {VideoPath}", videoPath);
-
-                var videoInfo = await FFProbe.AnalyseAsync(videoPath, cancellationToken);
-                var duration = videoInfo.Duration;
-
-                Directory.CreateDirectory(outputFolder);
-
-                for (var currentTime = TimeSpan.Zero; currentTime < duration; currentTime += _settings.IntervaloCaptura)
-                {
-                    cancellationToken.ThrowIfCancellationRequested();
-
-                    await ProcessarFrameAsync(videoPath, outputFolder, currentTime);
-                }
-
-                _logger.LogInformation("Processamento concluído com sucesso");
-            }
-            catch (OperationCanceledException)
-            {
-                _logger.LogWarning("Processamento cancelado");
-                throw;
-            }
-            catch (Exception ex)
-            {
-                _logger.LogError(ex, "Erro durante o processamento do vídeo");
-                throw new VideoProcessingException("Falha no processamento do vídeo", ex);
-            }
-        }
-
-        public async Task<byte[]> GerarThumbnailsZipAsync(string videoPath, TimeSpan interval, CancellationToken cancellationToken = default)
-        {
-            var tempFolder = Path.Combine(Path.GetTempPath(), Guid.NewGuid().ToString());
-
-            try
-            {
-                Directory.CreateDirectory(tempFolder);
-                await ProcessarVideoAsync(videoPath, tempFolder, cancellationToken);
-
-                var zipPath = Path.Combine(Path.GetTempPath(), $"{Guid.NewGuid()}.zip");
-                ZipFile.CreateFromDirectory(tempFolder, zipPath);
-
-                return await File.ReadAllBytesAsync(zipPath, cancellationToken);
-            }
-            finally
-            {
-                CleanupTempFiles(tempFolder);
-            }
-        }
-
-        private async Task ProcessarFrameAsync(string videoPath, string outputFolder, TimeSpan currentTime)
-        {
-            var outputFileName = $"frame_at_{currentTime.TotalSeconds:000}.jpg";
-            var outputPath = Path.Combine(outputFolder, outputFileName);
-
-            _logger.LogDebug("Gerando frame: {CurrentTime}", currentTime);
-
-            await FFMpeg.SnapshotAsync(
-                videoPath,
-                outputPath,
-                _settings.TamanhoFrame,
-                currentTime);
-        }
-
-        private void CleanupTempFiles(string tempFolder)
-        {
-            try
-            {
-                if (Directory.Exists(tempFolder))
-                {
-                    Directory.Delete(tempFolder, true);
-                }
-            }
-            catch (Exception ex)
-            {
-                _logger.LogError(ex, "Erro ao limpar arquivos temporários");
-            }
+            _logger.LogError(ex, "Erro durante o processamento do vídeo para o usuário {UserId}", userId);
+            throw new VideoProcessingException("Falha crítica no processamento de vídeo", ex);
         }
     }
 }
