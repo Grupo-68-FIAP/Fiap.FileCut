@@ -5,7 +5,7 @@
 		public string FileName { get; }
 		public Stream FileStream { get; }
 
-		public FileStreamResult() { }
+		private bool _disposed = false;
 
 		public FileStreamResult(string fileName, Stream fileStream)
 		{
@@ -15,7 +15,11 @@
 
 		public void Dispose()
 		{
-			FileStream?.Dispose();
+			if (!_disposed)
+			{
+				FileStream?.Dispose();
+				_disposed = true;
+			}
 		}
 	}
 }

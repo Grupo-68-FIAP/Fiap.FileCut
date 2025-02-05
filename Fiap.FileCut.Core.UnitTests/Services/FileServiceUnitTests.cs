@@ -98,18 +98,23 @@ public class FileServiceUnitTests
 		var notifyService = new Mock<INotifyService>();
 
 		var fileRepositoryMock = new Mock<IFileRepository>();
-		var fileMock = new Mock<FileStreamResult>();
+
+		var fileStream = new MemoryStream();
+		var fileMock = new FileStreamResult(fileName, fileStream);
+
 		fileRepositoryMock
 			.Setup(repo => repo.GetAsync(userId, fileName, cancellationToken))
-			.ReturnsAsync(fileMock.Object);
+			.ReturnsAsync(fileMock);
 
 		var loggerMock = new Mock<ILogger<FileService>>();
 		var fileService = new FileService(fileRepositoryMock.Object, notifyService.Object, loggerMock.Object);
 
+		// Act
 		var result = await fileService.GetFileAsync(userId, fileName, cancellationToken);
 
-		Assert.Equal(fileMock.Object, result);
-		fileRepositoryMock.Verify(repo => repo.GetAsync(userId, fileName, cancellationToken), Times.Once); 
+		// Assert
+		Assert.Equal(fileMock, result);
+		fileRepositoryMock.Verify(repo => repo.GetAsync(userId, fileName, cancellationToken), Times.Once);
 	}
 
 	[Fact]
