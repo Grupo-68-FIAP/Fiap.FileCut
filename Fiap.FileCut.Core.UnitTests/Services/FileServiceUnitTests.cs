@@ -309,7 +309,8 @@ public class FileServiceUnitTests
 		// Arrange
 		var userId = Guid.NewGuid();
 		string fileName = "testfile.txt";
-		Stream? fileStream = null;  // Simulando fileStream nulo
+		var fileStream = new Mock<Stream>();  
+		fileStream.Setup(s => s.Length).Returns(0); 
 		var cancellationToken = CancellationToken.None;
 
 		var fileRepositoryMock = new Mock<IFileRepository>();
@@ -320,7 +321,7 @@ public class FileServiceUnitTests
 
 		// Act & Assert
 		var exception = await Assert.ThrowsAsync<InvalidOperationException>(() =>
-			fileService.SaveFileAsync(userId, fileName, fileStream, cancellationToken));
+			fileService.SaveFileAsync(userId, fileName, fileStream.Object, cancellationToken));
 
 		Assert.Equal("Validation error occurred while saving the file.", exception.Message);
 	}
