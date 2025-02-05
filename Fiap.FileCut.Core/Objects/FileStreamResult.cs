@@ -30,10 +30,5 @@
 				_disposed = true;
 			}
 		}
-
-		FileStreamResult()
-		{
-			Dispose(false);
-		}
 	}
 }
