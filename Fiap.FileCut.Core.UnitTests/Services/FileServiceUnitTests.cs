@@ -309,7 +309,7 @@ public class FileServiceUnitTests
 		// Arrange
 		var userId = Guid.NewGuid();
 		string fileName = "testfile.txt";
-		Stream fileStream = null;  // Simulando fileStream nulo
+		Stream? fileStream = null;  // Simulando fileStream nulo
 		var cancellationToken = CancellationToken.None;
 
 		var fileRepositoryMock = new Mock<IFileRepository>();
