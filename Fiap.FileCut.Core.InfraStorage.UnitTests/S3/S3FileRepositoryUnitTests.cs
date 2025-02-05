@@ -41,10 +41,10 @@ namespace Fiap.FileCut.Core.InfraStorage.UnitTests.S3
 			var result = await _fileRepository.GetAsync(userId, fileName, cancellationToken);
 
 			Assert.NotNull(result);
-			Assert.Equal(fileBytes.Length, result.Length);
+			Assert.Equal(fileBytes.Length, result.FileStream.Length);
 			using (var memoryStream = new MemoryStream())
 			{
-				await result.CopyToAsync(memoryStream);
+				await result.FileStream.CopyToAsync(memoryStream);
 				Assert.Equal(fileBytes, memoryStream.ToArray());
 			}
 
@@ -141,11 +141,13 @@ namespace Fiap.FileCut.Core.InfraStorage.UnitTests.S3
 		public async Task UpdateAsync_WhenInvalidFileName_ShouldThrowInvalidOperationException()
 		{
 			var userId = Guid.NewGuid();
-			var fileMock = new Mock<IFormFile>();
-			fileMock.Setup(f => f.FileName).Returns("invalid|filename.txt");
+			var fileName = "invalid|filename.txt"; // Nome de arquivo inválido
+			var fileStream = new MemoryStream(new byte[10]); // Simula um arquivo válido
 			var cancellationToken = CancellationToken.None;
 
-			var exception = await Assert.ThrowsAsync<InvalidOperationException>(() => _fileRepository.UpdateAsync(userId, fileMock.Object, cancellationToken));
+			var exception = await Assert.ThrowsAsync<InvalidOperationException>(() =>
+				_fileRepository.UpdateAsync(userId, fileStream, fileName, cancellationToken));
+
 			Assert.Contains("Unexpected error while uploading/updating file", exception.Message);
 		}
 
@@ -167,15 +169,19 @@ namespace Fiap.FileCut.Core.InfraStorage.UnitTests.S3
 		public async Task UpdateAsync_WhenS3ErrorOccurs_ShouldThrowFileRepositoryException()
 		{
 			var userId = Guid.NewGuid();
-			var fileMock = new Mock<IFormFile>();
-			fileMock.Setup(f => f.FileName).Returns("validFileName.txt");
+			var fileName = "validFileName.txt";
+			var fileStream = new MemoryStream(new byte[10]); // Simula um arquivo válido
 			var cancellationToken = CancellationToken.None;
 
 			_s3ClientMock.Setup(s3Client => s3Client.PutObjectAsync(It.IsAny<PutObjectRequest>(), cancellationToken))
 				.ThrowsAsync(new AmazonS3Exception("S3 Error"));
 
-			var exception = await Assert.ThrowsAsync<FileRepositoryException>(() => _fileRepository.UpdateAsync(userId, fileMock.Object, cancellationToken));
-			Assert.Contains("AWS S3 error", exception.Message);
+			// Act & Assert
+			var exception = await Assert.ThrowsAsync<FileRepositoryException>(() =>
+				_fileRepository.UpdateAsync(userId, fileStream, fileName, cancellationToken));
+
+			Assert.Contains("AWS S3 error", exception.Message); 
+			Assert.IsType<AmazonS3Exception>(exception.InnerException);
 		}
 
 		[Fact]

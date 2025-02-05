@@ -1,6 +1,5 @@
 using Fiap.FileCut.Core.Interfaces.Repository;
-using Microsoft.AspNetCore.Http;
-using Microsoft.AspNetCore.Http.Internal;
+using Fiap.FileCut.Infra.Storage.Shared.Models;
 
 namespace Fiap.FileCut.Infra.Storage.LocalDisk;
 
@@ -55,27 +54,26 @@ public class LocalDiskFileRepository : IFileRepository
 		return await Task.FromResult<IList<string>>(fileNames);
 	}
 
-	public async Task<IList<IFormFile>> GetAllAsync(Guid userId, CancellationToken cancellationToken)
+	public async Task<IList<FileStreamResult>> GetAllAsync(Guid userId, CancellationToken cancellationToken)
 	{
 		try
 		{
 			string userFolderPath = Path.Combine(_localStorageFolderPath, userId.ToString());
 			if (!Directory.Exists(userFolderPath))
-				return new List<IFormFile>(); 
+				return new List<FileStreamResult>();
 
 			var files = Directory.GetFiles(userFolderPath);
-			var formFiles = new List<IFormFile>();
+			var fileResults = new List<FileStreamResult>();
 
 			foreach (var filePath in files)
 			{
-				var fileStream = new FileStream(filePath, FileMode.Open, FileAccess.Read);
+				var fileStream = new FileStream(filePath, FileMode.Open, FileAccess.Read, FileShare.Read);
 				var fileName = Path.GetFileName(filePath);
 
-				var formFile = new FormFile(fileStream, 0, fileStream.Length, fileName, fileName);
-				formFiles.Add(formFile);
+				fileResults.Add(new FileStreamResult(fileName, fileStream));
 			}
 
-			return await Task.FromResult(formFiles);
+			return await Task.FromResult(fileResults);
 		}
 		catch (Exception ex)
 		{
@@ -83,7 +81,7 @@ public class LocalDiskFileRepository : IFileRepository
 		}
 	}
 
-	public async Task<IFormFile?> GetAsync(Guid userId, string fileName, CancellationToken cancellationToken)
+	public async Task<FileStreamResult?> GetAsync(Guid userId, string fileName, CancellationToken cancellationToken)
 	{
 		try
 		{
@@ -93,8 +91,8 @@ public class LocalDiskFileRepository : IFileRepository
 			if (!File.Exists(filePath))
 				return null;
 
-			var fileStream = new FileStream(filePath, FileMode.Open, FileAccess.Read);
-			return await Task.FromResult(new FormFile(fileStream, 0, fileStream.Length, fileName, fileName));
+			var fileStream = new FileStream(filePath, FileMode.Open, FileAccess.Read, FileShare.Read);
+			return await Task.FromResult(new FileStreamResult(fileName, fileStream));
 		}
 		catch (Exception ex)
 		{
@@ -102,30 +100,28 @@ public class LocalDiskFileRepository : IFileRepository
 		}
 	}
 
-	public async Task<bool> UpdateAsync(Guid userId, IFormFile file, CancellationToken cancellationToken)
+	public async Task<bool> UpdateAsync(Guid userId, Stream fileStream, string fileName, CancellationToken cancellationToken)
 	{
-		ArgumentNullException.ThrowIfNull(file);
-
 		try
 		{
-			if (file.Length <= 0)
+			if (fileStream == null || fileStream.Length == 0)
 				return false;
 
 			string userFolderPath = Path.Combine(_localStorageFolderPath, userId.ToString());
 			EnsureDirectoryExists(userFolderPath);
 
-			string filePath = Path.Combine(userFolderPath, file.FileName);
+			string filePath = Path.Combine(userFolderPath, fileName);
 
-			using (var fileStream = new FileStream(filePath, FileMode.Create))
+			using (var outputStream = new FileStream(filePath, FileMode.Create, FileAccess.Write, FileShare.None))
 			{
-				await file.CopyToAsync(fileStream, cancellationToken);
+				await fileStream.CopyToAsync(outputStream, cancellationToken);
 			}
 
 			return File.Exists(filePath);
 		}
 		catch (Exception ex)
 		{
-			throw new InvalidOperationException($"Failed to save file {file.FileName} for user {userId}.", ex);
+			throw new InvalidOperationException($"Failed to save file {fileName} for user {userId}.", ex);
 		}
 	}
 
