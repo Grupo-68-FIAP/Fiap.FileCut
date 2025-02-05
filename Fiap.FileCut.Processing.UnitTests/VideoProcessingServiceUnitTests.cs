@@ -40,7 +40,7 @@ public class VideoProcessingServiceTests
         var mockVideoInfo = new Mock<IMediaAnalysis>();
         mockVideoInfo.SetupGet(v => v.Duration).Returns(TimeSpan.FromSeconds(5));
 
-        await _service.ProcessVideoAsync(videoPath, userId);
+        await _service.ProcessVideoAsync(userId, videoPath);
         var expectedZipPath = Path.Combine(_options.WorkingDirectory, userId.ToString(), "frames.zip");
         Assert.True(File.Exists(expectedZipPath));
 
@@ -54,7 +54,7 @@ public class VideoProcessingServiceTests
         var userId = Guid.NewGuid();
 
         await Assert.ThrowsAsync<VideoProcessingException>(
-            () => _service.ProcessVideoAsync(invalidPath, userId));
+            () => _service.ProcessVideoAsync(userId, invalidPath));
     }
 
     [Fact]
@@ -67,7 +67,7 @@ public class VideoProcessingServiceTests
         var mockVideoInfo = new Mock<IMediaAnalysis>();
         mockVideoInfo.SetupGet(v => v.Duration).Returns(duration);
 
-        await _service.ProcessVideoAsync(videoPath, userId);
+        await _service.ProcessVideoAsync(userId, videoPath);
 
         var framesDir = Path.Combine(_options.WorkingDirectory, userId.ToString(), "frames");
         var frameCount = Directory.GetFiles(framesDir, "*.jpg").Length;
@@ -84,7 +84,7 @@ public class VideoProcessingServiceTests
         mockVideoInfo.SetupGet(v => v.Duration).Throws(new Exception("FFmpeg error"));
 
         await Assert.ThrowsAsync<VideoProcessingException>(
-            () => _service.ProcessVideoAsync(videoPath, userId));
+            () => _service.ProcessVideoAsync(userId, videoPath));
     }
 
     [Fact]
@@ -93,7 +93,7 @@ public class VideoProcessingServiceTests
         var videoPath = "test-processing.mp4";
         var userId = Guid.NewGuid();
 
-        await _service.ProcessVideoAsync(videoPath, userId);
+        await _service.ProcessVideoAsync(userId, videoPath);
 
         var zipPath = Path.Combine(_options.WorkingDirectory, userId.ToString(), "frames.zip");
         using var archive = ZipFile.OpenRead(zipPath);
