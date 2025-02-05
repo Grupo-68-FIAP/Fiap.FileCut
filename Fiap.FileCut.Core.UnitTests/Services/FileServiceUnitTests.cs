@@ -118,6 +118,30 @@ public class FileServiceUnitTests
 	}
 
 	[Fact]
+	public async Task GetFileAsync_WhenFileNotFound_ShouldThrowFileNotFoundException()
+	{
+		// Arrange
+		var userId = Guid.NewGuid();
+		var fileName = "nonexistentfile.txt";
+		var cancellationToken = CancellationToken.None;
+
+		var notifyService = new Mock<INotifyService>();
+
+		var fileRepositoryMock = new Mock<IFileRepository>();
+
+		var loggerMock = new Mock<ILogger<FileService>>();
+		var fileService = new FileService(fileRepositoryMock.Object, notifyService.Object, loggerMock.Object);
+
+		// Act & Assert
+		var exception = await Assert.ThrowsAsync<InvalidOperationException>(
+			() => fileService.GetFileAsync(userId, fileName, cancellationToken)
+		);
+
+		Assert.Contains("[FileService] - Error while downloading file.", exception.Message);
+		fileRepositoryMock.Verify(repo => repo.GetAsync(userId, fileName, cancellationToken), Times.Once);
+	}
+
+	[Fact]
 	public async Task GetFileAsync_WhenFileNotFound_ShouldThrowInvalidOperationException()
 	{
 		// Arrange
