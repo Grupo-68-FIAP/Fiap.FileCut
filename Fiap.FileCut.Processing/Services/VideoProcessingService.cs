@@ -5,6 +5,7 @@ using Microsoft.Extensions.Options;
 using System.Drawing;
 using System.IO.Compression;
 using Fiap.FileCut.Processing.Exceptions;
+using Fiap.FileCut.Core.Objects;
 
 namespace Fiap.FileCut.Processing.Services;
 
@@ -13,17 +14,13 @@ public class VideoProcessingService : IVideoProcessingService
     private readonly ILogger<VideoProcessingService> _logger;
     private readonly ProcessingOptions _options;
 
-    public VideoProcessingService(
-        ILogger<VideoProcessingService> logger,
-        IOptions<ProcessingOptions> options)
+    public VideoProcessingService(ILogger<VideoProcessingService> logger, IOptions<ProcessingOptions> options)
     {
         _logger = logger;
         _options = options.Value;
     }
 
-    public async Task ProcessVideoAsync(
-        string videoPath, 
-        Guid userId)
+    public async Task ProcessVideoAsync(Guid userId, string videoPath)
     {
         try
         {

@@ -1,15 +1,6 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
+﻿namespace Fiap.FileCut.Core.Interfaces.Services;
 
-namespace Fiap.FileCut.Core.Interfaces.Services
+public interface IVideoProcessingService
 {
-    public interface IVideoProcessingService
-    {
-       Task ProcessVideoAsync(
-        string videoPath,
-        Guid userId);
-    }
+    Task ProcessVideoAsync(Guid userId, string videoPath);
 }

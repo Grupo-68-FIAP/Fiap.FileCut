@@ -6,8 +6,9 @@ using Xunit;
 using Fiap.FileCut.Processing.Exceptions;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
+using Fiap.FileCut.Core.Objects;
 
-namespace Fiap.FileCut.Processing.Tests.Services;
+namespace Fiap.FileCut.Processing.UnitTests;
 
 public class VideoProcessingServiceTests
 {
@@ -70,7 +71,7 @@ public class VideoProcessingServiceTests
 
         var framesDir = Path.Combine(_options.WorkingDirectory, userId.ToString(), "frames");
         var frameCount = Directory.GetFiles(framesDir, "*.jpg").Length;
-        Assert.Equal((int)(duration.TotalSeconds / _options.FrameIntervalSeconds), frameCount);
+        Assert.Equal((int) (duration.TotalSeconds / _options.FrameIntervalSeconds), frameCount);
     }
 
     [Fact]

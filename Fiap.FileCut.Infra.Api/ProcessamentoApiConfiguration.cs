@@ -1,6 +1,8 @@
 ﻿using Fiap.FileCut.Core.Handlers;
 using Fiap.FileCut.Core.Interfaces.Services;
+using Fiap.FileCut.Core.Objects;
 using Fiap.FileCut.Infra.Api.Configurations;
+using Fiap.FileCut.Processing.Services;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.Extensions.DependencyInjection;
 
@@ -19,8 +21,8 @@ namespace Fiap.FileCut.Infra.Api
             });
 
 
-            builder.Services.AddScoped<IVideoProcessingService, IVideoProcessingService>();
-            builder.Services.AddScoped<ProcessingOptions, ProcessingOptions>();
+            builder.Services.AddScoped<IVideoProcessingService, VideoProcessingService>();
+            builder.Services.AddScoped<ProcessingOptions>();
         }
 
         public static Task ScopedFileCutProcessamentoApi(this IServiceScope scope)
