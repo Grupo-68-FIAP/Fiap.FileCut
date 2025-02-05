@@ -304,6 +304,28 @@ public class FileServiceUnitTests
 	}
 
 	[Fact]
+	public async Task SaveFileAsync_WhenFileStreamIsNull_ShouldThrowInvalidOperationException()
+	{
+		// Arrange
+		var userId = Guid.NewGuid();
+		string fileName = "testfile.txt";
+		Stream fileStream = null;  // Simulando fileStream nulo
+		var cancellationToken = CancellationToken.None;
+
+		var fileRepositoryMock = new Mock<IFileRepository>();
+		var notifyService = new Mock<INotifyService>();
+		var logger = Mock.Of<ILogger<FileService>>();
+
+		var fileService = new FileService(fileRepositoryMock.Object, notifyService.Object, logger);
+
+		// Act & Assert
+		var exception = await Assert.ThrowsAsync<InvalidOperationException>(() =>
+			fileService.SaveFileAsync(userId, fileName, fileStream, cancellationToken));
+
+		Assert.Equal("Validation error occurred while saving the file.", exception.Message);
+	}
+
+	[Fact]
 	public async Task SaveFileAsync_WhenSaveFails_ShouldReturnFalse()
 	{
 		// Arrange
