@@ -15,11 +15,25 @@
 
 		public void Dispose()
 		{
+			Dispose(true);
+			GC.SuppressFinalize(this);
+		}
+
+		protected virtual void Dispose(bool disposing)
+		{
 			if (!_disposed)
 			{
-				FileStream?.Dispose();
+				if (disposing)
+				{
+					FileStream?.Dispose();
+				}
 				_disposed = true;
 			}
+		}
+
+		~FileStreamResult()
+		{
+			Dispose(false);
 		}
 	}
 }
