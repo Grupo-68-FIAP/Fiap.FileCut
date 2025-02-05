@@ -213,21 +213,19 @@ namespace Fiap.FileCut.Core.InfraStorage.UnitTests.LocalDisk
 		{
 			// Arrange
 			var userId = Guid.NewGuid();
-			var fileMock = new Mock<IFormFile>();
-			fileMock.Setup(f => f.FileName).Returns("testfile.txt");
-			fileMock.Setup(f => f.Length).Returns(10);
-			fileMock.Setup(f => f.OpenReadStream()).Returns(new MemoryStream(new byte[10]));
+			var fileName = "testfile.txt";
+			var fileStream = new MemoryStream(new byte[10]); 
 			var cancellationToken = CancellationToken.None;
 			var userFolderPath = Path.Combine(Directory.GetCurrentDirectory(), "LocalStorage", userId.ToString());
 
 			Directory.CreateDirectory(userFolderPath);
 
 			// Act
-			var result = await _fileRepository.UpdateAsync(userId, fileMock.Object, cancellationToken);
+			var result = await _fileRepository.UpdateAsync(userId, fileStream, fileName, cancellationToken);
 
 			// Assert
 			Assert.True(result);
-			Assert.True(File.Exists(Path.Combine(userFolderPath, "testfile.txt")));
+			Assert.True(File.Exists(Path.Combine(userFolderPath, fileName)));
 		}
 
 		[Fact]
@@ -235,16 +233,15 @@ namespace Fiap.FileCut.Core.InfraStorage.UnitTests.LocalDisk
 		{
 			// Arrange
 			var userId = Guid.NewGuid();
-			var fileMock = new Mock<IFormFile>();
-			fileMock.Setup(f => f.FileName).Returns("testfile.txt");
-			fileMock.Setup(f => f.Length).Returns(0);  // Invalid file size
+			var fileName = "testfile.txt";
+			var fileStream = new MemoryStream(); // Stream vazio (simula um arquivo com comprimento 0)
 			var cancellationToken = CancellationToken.None;
 			var userFolderPath = Path.Combine(Directory.GetCurrentDirectory(), "LocalStorage", userId.ToString());
 
 			Directory.CreateDirectory(userFolderPath);
 
 			// Act
-			var result = await _fileRepository.UpdateAsync(userId, fileMock.Object, cancellationToken);
+			var result = await _fileRepository.UpdateAsync(userId, fileStream, fileName, cancellationToken);
 
 			// Assert
 			Assert.False(result);

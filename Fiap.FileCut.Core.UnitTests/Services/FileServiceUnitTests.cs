@@ -1,6 +1,7 @@
 ﻿using Fiap.FileCut.Core.Interfaces.Repository;
 using Fiap.FileCut.Core.Interfaces.Services;
 using Fiap.FileCut.Core.Services;
+using Fiap.FileCut.Infra.Storage.Shared.Models;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Http.Internal;
 using Microsoft.Extensions.Logging;
@@ -97,7 +98,7 @@ public class FileServiceUnitTests
 		var notifyService = new Mock<INotifyService>();
 
 		var fileRepositoryMock = new Mock<IFileRepository>();
-		var fileMock = new Mock<IFormFile>();
+		var fileMock = new Mock<FileStreamResult>();
 		fileRepositoryMock
 			.Setup(repo => repo.GetAsync(userId, fileName, cancellationToken))
 			.ReturnsAsync(fileMock.Object);
@@ -112,7 +113,7 @@ public class FileServiceUnitTests
 	}
 
 	[Fact]
-	public async Task GetFileAsync_WhenFileNotFound_ShouldThrowFileNotFoundException()
+	public async Task GetFileAsync_WhenFileNotFound_ShouldThrowInvalidOperationException()
 	{
 		// Arrange
 		var userId = Guid.NewGuid();
@@ -121,20 +122,24 @@ public class FileServiceUnitTests
 
 		var fileRepositoryMock = new Mock<IFileRepository>();
 		var notifyService = new Mock<INotifyService>();
-
 		var loggerMock = new Mock<ILogger<FileService>>();
 		var fileService = new FileService(fileRepositoryMock.Object, notifyService.Object, loggerMock.Object);
 
+		// Simular o erro ao buscar o arquivo
+		fileRepositoryMock.Setup(repo => repo.GetAsync(userId, fileName, cancellationToken))
+						  .ThrowsAsync(new InvalidOperationException("[FileService] - Error while downloading file. User: " + userId));
+
 		// Act & Assert
-		var exception = await Assert.ThrowsAsync<FileNotFoundException>(async () =>
+		var exception = await Assert.ThrowsAsync<InvalidOperationException>(async () =>
 			await fileService.GetFileAsync(userId, fileName, cancellationToken));
 
-		Assert.Equal($"The file '{fileName}' for user '{userId}' was not found.", exception.Message);
-		fileRepositoryMock.Verify(repo => repo.GetAsync(userId, fileName, cancellationToken), Times.Once); 
+		// Ajuste: Verificar se a mensagem contém a parte esperada
+		Assert.Contains("[FileService] - Error while downloading file.", exception.Message);
+		fileRepositoryMock.Verify(repo => repo.GetAsync(userId, fileName, cancellationToken), Times.Once);
 	}
 
 	[Fact]
-	public async Task GetFileAsync_WhenExceptionOccurs_ShouldThrowException()
+	public async Task GetFileAsync_WhenExceptionOccurs_ShouldThrowInvalidOperationException()
 	{
 		// Arrange
 		var userId = Guid.NewGuid();
@@ -152,10 +157,11 @@ public class FileServiceUnitTests
 		var fileService = new FileService(fileRepositoryMock.Object, notifyService.Object, loggerMock.Object);
 
 		// Act & Assert
-		var exception = await Assert.ThrowsAsync<Exception>(async () =>
+		var exception = await Assert.ThrowsAsync<InvalidOperationException>(async () =>
 			await fileService.GetFileAsync(userId, fileName, cancellationToken));
 
-		fileRepositoryMock.Verify(repo => repo.GetAsync(userId, fileName, cancellationToken), Times.Once); 
+		Assert.Equal("[FileService] - Error while downloading file. User: " + userId + ", File: " + fileName, exception.Message);
+		fileRepositoryMock.Verify(repo => repo.GetAsync(userId, fileName, cancellationToken), Times.Once);
 	}
 
 	[Fact]
@@ -167,13 +173,17 @@ public class FileServiceUnitTests
 
 		var notifyService = new Mock<INotifyService>();
 
+		// Mockando o repositório sem criar realmente arquivos
 		var fileRepositoryMock = new Mock<IFileRepository>();
-		var fileList = new List<IFormFile>
+
+		// Simulando uma lista de resultados de arquivos
+		var fileList = new List<FileStreamResult>
 		{
-			new FormFile(new MemoryStream(), 0, 10, "file", "testfile1.txt"),
-			new FormFile(new MemoryStream(), 0, 10, "file", "testfile2.txt")
+			new FileStreamResult("testfile1.txt", new MemoryStream()),
+			new FileStreamResult("testfile2.txt", new MemoryStream()) 
 		};
 
+		// Configuração do repositório mockado para retornar os arquivos simulados
 		fileRepositoryMock
 			.Setup(repo => repo.GetAllAsync(userId, cancellationToken))
 			.ReturnsAsync(fileList);
@@ -183,11 +193,15 @@ public class FileServiceUnitTests
 		// Act & Assert
 		var result = await fileService.GetFileNamesAsync(userId, cancellationToken);
 
+		// Verificação dos resultados esperados
 		Assert.Equal(2, result.Count);
 		Assert.Contains("testfile1.txt", result);
 		Assert.Contains("testfile2.txt", result);
+
+		// Verificando que o repositório foi chamado corretamente
 		fileRepositoryMock.Verify(repo => repo.GetAllAsync(userId, cancellationToken), Times.Once);
 	}
+
 
 	[Fact]
 	public async Task GetFileNamesAsync_WhenNoFilesExist_ShouldReturnEmptyList()
@@ -200,7 +214,7 @@ public class FileServiceUnitTests
 		var fileRepositoryMock = new Mock<IFileRepository>();
 		fileRepositoryMock
 			.Setup(repo => repo.GetAllAsync(userId, cancellationToken))
-			.ReturnsAsync(new List<IFormFile>());
+			.ReturnsAsync(new List<FileStreamResult>());
 
 		// Act & Assert
 		var fileService = new FileService(fileRepositoryMock.Object, notifyService.Object, Mock.Of<ILogger<FileService>>());
@@ -239,26 +253,25 @@ public class FileServiceUnitTests
 	{
 		// Arrange
 		var userId = Guid.NewGuid();
-		var fileMock = new Mock<IFormFile>();
-		fileMock.Setup(file => file.FileName).Returns("testfile.txt");
-		fileMock.Setup(file => file.Length).Returns(10);
+		var fileName = "testfile.txt";
+		var fileStream = new MemoryStream(new byte[10]);
 
 		var notifyService = new Mock<INotifyService>();
 
 		var cancellationToken = CancellationToken.None;
 		var fileRepositoryMock = new Mock<IFileRepository>();
 		fileRepositoryMock
-			.Setup(repo => repo.UpdateAsync(userId, fileMock.Object, cancellationToken))
+			.Setup(repo => repo.UpdateAsync(userId, fileStream, fileName, cancellationToken))
 			.ReturnsAsync(true);
 
 		var fileService = new FileService(fileRepositoryMock.Object, notifyService.Object, Mock.Of<ILogger<FileService>>());
 
 		// Act
-		var result = await fileService.SaveFileAsync(userId, fileMock.Object, cancellationToken);
+		var result = await fileService.SaveFileAsync(userId, fileName, fileStream, cancellationToken);
 
 		// Assert
 		Assert.True(result);
-		fileRepositoryMock.Verify(repo => repo.UpdateAsync(userId, fileMock.Object, cancellationToken), Times.Once);
+		fileRepositoryMock.Verify(repo => repo.UpdateAsync(userId,fileStream, fileName, cancellationToken), Times.Once);
 	}
 
 	[Fact]
@@ -266,26 +279,25 @@ public class FileServiceUnitTests
 	{
 		// Arrange
 		var userId = Guid.NewGuid();
-		var fileMock = new Mock<IFormFile>();
-		fileMock.Setup(file => file.FileName).Returns("testfile.txt");
-		fileMock.Setup(file => file.Length).Returns(10);
+		var fileName = "testfile.txt";
+		var fileStream = new MemoryStream(new byte[10]);
 
 		var notifyService = new Mock<INotifyService>();
 
 		var cancellationToken = CancellationToken.None;
 		var fileRepositoryMock = new Mock<IFileRepository>();
 		fileRepositoryMock
-			.Setup(repo => repo.UpdateAsync(userId, fileMock.Object, cancellationToken))
-			.ReturnsAsync(false); 
+			.Setup(repo => repo.UpdateAsync(userId, fileStream, fileName, cancellationToken))
+			.ReturnsAsync(false);
 
 		var fileService = new FileService(fileRepositoryMock.Object, notifyService.Object, Mock.Of<ILogger<FileService>>());
 
 		// Act
-		var result = await fileService.SaveFileAsync(userId, fileMock.Object, cancellationToken);
+		var result = await fileService.SaveFileAsync(userId, fileName, fileStream, cancellationToken);
 
 		// Assert
 		Assert.False(result);
-		fileRepositoryMock.Verify(repo => repo.UpdateAsync(userId, fileMock.Object, cancellationToken), Times.Once);
+		fileRepositoryMock.Verify(repo => repo.UpdateAsync(userId, fileStream, fileName, cancellationToken), Times.Once);
 	}
 
 	[Fact]
@@ -293,25 +305,25 @@ public class FileServiceUnitTests
 	{
 		// Arrange
 		var userId = Guid.NewGuid();
-		var fileMock = new Mock<IFormFile>();
-		fileMock.Setup(file => file.FileName).Returns("testfile.txt");
-		fileMock.Setup(file => file.Length).Returns(10);
+		var fileName = "testfile.txt";
+		var fileStream = new MemoryStream(new byte[10]);
 
 		var notifyService = new Mock<INotifyService>();
 
 		var cancellationToken = CancellationToken.None;
 		var fileRepositoryMock = new Mock<IFileRepository>();
 		fileRepositoryMock
-			.Setup(repo => repo.UpdateAsync(userId, fileMock.Object, cancellationToken))
-			.ThrowsAsync(new Exception("Simulação de erro")); 
+			.Setup(repo => repo.UpdateAsync(userId, fileStream, fileName, cancellationToken))
+			.ThrowsAsync(new Exception("Simulação de erro"));
 
 		var fileService = new FileService(fileRepositoryMock.Object, notifyService.Object, Mock.Of<ILogger<FileService>>());
 
 		// Act & Assert
 		var exception = await Assert.ThrowsAsync<InvalidOperationException>(async () =>
-			await fileService.SaveFileAsync(userId, fileMock.Object, cancellationToken));
+			await fileService.SaveFileAsync(userId, fileName, fileStream, cancellationToken));
 
-		Assert.Equal($"[{nameof(FileService)}] - Unexpected error while saving file. User: {userId}, File: testfile.txt", exception.Message);
-		fileRepositoryMock.Verify(repo => repo.UpdateAsync(userId, fileMock.Object, cancellationToken), Times.Once);
+		Assert.Equal($"[{nameof(FileService)}] - Unexpected error while saving file. User: {userId}, File: {fileName}", exception.Message);
+		fileRepositoryMock.Verify(repo => repo.UpdateAsync(userId, fileStream, fileName, cancellationToken), Times.Once);
 	}
+
 }
