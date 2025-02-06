@@ -63,7 +63,6 @@ public class GestaoApplicationUnitTests
         var result = await gestaoApplication.GetVideoMetadataAsync(guid, videoName, CancellationToken.None);
 
 		// Assert
-		Assert.NotNull(result);
 		Assert.Equal(videoName, result.Name);
         Assert.Equal(VideoState.PENDING, result.State);
     }
