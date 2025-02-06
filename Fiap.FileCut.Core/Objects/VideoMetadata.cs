@@ -1,4 +1,6 @@
-﻿namespace Fiap.FileCut.Core.Objects;
+﻿using Fiap.FileCut.Core.Objects.Enums;
+
+namespace Fiap.FileCut.Core.Objects;
 
 public readonly record struct VideoMetadata
 {

@@ -1,4 +1,6 @@
-﻿using Fiap.FileCut.Infra.Api.Configurations;
+﻿using Fiap.FileCut.Core.Adapters;
+using Fiap.FileCut.Core.Objects.QueueEvents;
+using Fiap.FileCut.Infra.Api.Configurations;
 using Fiap.FileCut.Infra.Api.Middlewares;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.Extensions.DependencyInjection;
@@ -7,18 +9,23 @@ namespace Fiap.FileCut.Infra.Api
 {
     public static class UploadApiConfiguration
     {
-        public static Task ConfigureFileCutUploadApi(this IServiceCollection services)
+        public static async Task ConfigureFileCutUploadApi(this IServiceCollection services)
         {
             services.AddJwtBearerAuthentication();
             services.AddSwaggerFC();
             services.AddEnvCors();
+            services.AddNotifications();
 
-            return Task.CompletedTask;
+            await services.AddQueue(cfg =>
+            {
+                cfg.AddPublisher<VideoUploadedEvent, VideoUploadedQueuePublish>();
+                cfg.AddPublisher<UserNotifyEvent, UserNotifyQueuePublish>();
+            });
         }
 
-        public static Task ScopedFileCutUploadApi(this IServiceScope scope)
+        public static async Task ScopedFileCutUploadApi(this IServiceScope scope)
         {
-            return Task.CompletedTask;
+            await scope.UseQueue();
         }
 
         public static Task InitializeFileCutUploadApi(this IApplicationBuilder app)

@@ -2,6 +2,7 @@
 using Fiap.FileCut.Core.Exceptions;
 using Fiap.FileCut.Core.Interfaces.Services;
 using Fiap.FileCut.Core.Objects;
+using Fiap.FileCut.Core.Objects.Enums;
 using Fiap.FileCut.Infra.Storage.Shared.Models;
 using Microsoft.AspNetCore.Http;
 using Moq;
@@ -54,9 +55,7 @@ public class GestaoApplicationUnitTests
 		var guid = Guid.NewGuid();
 		var videoName = "video.mp4";
 		var videoStream = new MemoryStream([1, 2, 3]); 
-		var videoFile = new FileStreamResult(videoName, videoStream); 
-		var stateSrt = "PENDING";
-        var stateFile = new FileStreamResult($"{videoName}.state", new MemoryStream(Encoding.UTF8.GetBytes(stateSrt)));
+		var videoFile = new FileStreamResult(videoName, videoStream);
 		fileService.Setup(x => x.GetFileAsync(guid, videoName, CancellationToken.None)).ReturnsAsync(videoFile);
         fileService.Setup(x => x.GetFileAsync(guid, $"{videoName}.state", CancellationToken.None)).ThrowsAsync(new FileNotFoundException());
 

@@ -2,6 +2,7 @@
 using Fiap.FileCut.Core.Interfaces.Applications;
 using Fiap.FileCut.Core.Interfaces.Services;
 using Fiap.FileCut.Core.Objects;
+using Fiap.FileCut.Core.Objects.Enums;
 using Fiap.FileCut.Infra.Storage.Shared.Models;
 
 namespace Fiap.FileCut.Core.Applications;
