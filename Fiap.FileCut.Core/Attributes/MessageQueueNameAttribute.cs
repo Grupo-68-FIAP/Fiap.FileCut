@@ -1,6 +1,6 @@
 ﻿namespace Fiap.FileCut.Core.Attributes;
 
-[AttributeUsage(AttributeTargets.Class | AttributeTargets.Enum | AttributeTargets.Interface | AttributeTargets.Delegate | AttributeTargets.Field)]
+[AttributeUsage(AttributeTargets.Field)]
 public class MessageQueueNameAttribute : Attribute
 {
     public string QueueName { get; protected set; }

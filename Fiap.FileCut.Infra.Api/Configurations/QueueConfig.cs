@@ -1,4 +1,4 @@
-﻿using Fiap.FileCut.Core.Attributes;
+﻿using Fiap.FileCut.Core.Adapters;
 using Fiap.FileCut.Core.Extensions;
 using Fiap.FileCut.Core.Interfaces.Adapters;
 using Fiap.FileCut.Core.Interfaces.Handlers;

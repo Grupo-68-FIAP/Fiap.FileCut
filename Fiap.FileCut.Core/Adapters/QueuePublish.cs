@@ -1,7 +1,8 @@
-﻿using Fiap.FileCut.Core.Interfaces.Services;
+﻿using Fiap.FileCut.Core.Interfaces.Adapters;
+using Fiap.FileCut.Core.Interfaces.Services;
 using Fiap.FileCut.Core.Objects;
 
-namespace Fiap.FileCut.Core.Interfaces.Adapters
+namespace Fiap.FileCut.Core.Adapters
 {
     public abstract class QueuePublish<T> : INotifyAdapter where T : class
     {
