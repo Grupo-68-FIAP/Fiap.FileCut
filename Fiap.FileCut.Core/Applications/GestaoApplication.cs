@@ -1,6 +1,7 @@
 ﻿using Fiap.FileCut.Core.Interfaces.Applications;
 using Fiap.FileCut.Core.Interfaces.Services;
 using Fiap.FileCut.Core.Objects;
+using Fiap.FileCut.Infra.Storage.Shared.Models;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Http.Internal;
 
@@ -8,14 +9,14 @@ namespace Fiap.FileCut.Core.Applications;
 
 public class GestaoApplication(IFileService fileService) : IGestaoApplication
 {
-	public async Task<IFormFile> GetVideoAsync(Guid guid, string videoName, CancellationToken cancellationToken)
+	public async Task<FileStreamResult> GetVideoAsync(Guid guid, string videoName, CancellationToken cancellationToken)
 	{
 		return await fileService.GetFileAsync(guid, videoName, cancellationToken);
 	}
 
 	public async Task<VideoMetadata> GetVideoMetadataAsync(Guid guid, string videoName, CancellationToken cancellationToken)
 	{
-		var file = await fileService.GetFileAsync(guid, videoName, cancellationToken)
+		FileStreamResult? file = await fileService.GetFileAsync(guid, videoName, cancellationToken)
 					?? throw new FileLoadException("File not found");
 
 		// TODO NOSONAR: Implementar a leitura do status do vídeo
