@@ -1,6 +1,8 @@
-﻿using Fiap.FileCut.Core.Interfaces.Handlers;
+﻿using Fiap.FileCut.Core.Adapters;
+using Fiap.FileCut.Core.Extensions;
+using Fiap.FileCut.Core.Interfaces.Adapters;
+using Fiap.FileCut.Core.Interfaces.Handlers;
 using Fiap.FileCut.Core.Interfaces.Services;
-using Fiap.FileCut.Core.Objects;
 using Fiap.FileCut.Infra.RabbitMq;
 using Microsoft.Extensions.DependencyInjection;
 using RabbitMQ.Client;
@@ -26,7 +28,9 @@ public static class QueueConfig
 
         services.AddSingleton<IConnection>(sp => connection);
         services.AddSingleton<IChannel>(sp => channel);
-        services.AddScoped<IMessagingConsumerService, RabbitMqConsumerService>();
+
+        services.AddSingleton<IMessagingConsumerService, RabbitMqConsumerService>();
+        services.AddSingleton<IMessagingPublisherService, RabbitMqPublisherService>();
         conf(new QueueBuilder(services));
     }
 
@@ -36,26 +40,35 @@ public static class QueueConfig
 
         public QueueBuilder SubscribeQueue<T, TImplementation>()
             where T : class
-            where TImplementation : class, IMessageHandler<T>
+            where TImplementation : class, IConsumerHandler<T>
         {
-            // TODO NOSONAR: Talvez criar um Attribute para definir o nome da fila no objeto colocando esse fullname coalesce
-            var queueName = typeof(T).FullName;
-            ArgumentNullException.ThrowIfNull(queueName);
+            var queueName = MessageQueueExtension.GetQueueName<T>(defaultQueue: typeof(T).FullName);
+
+            ArgumentNullException.ThrowIfNullOrWhiteSpace(queueName);
+
             return SubscribeQueue<T, TImplementation>(queueName);
         }
 
-        public QueueBuilder SubscribeQueue<T, TImplementation>(string queueName)
+        public QueueBuilder AddPublisher<T, TImplementation>()
             where T : class
-            where TImplementation : class, IMessageHandler<T>
+            where TImplementation : QueuePublish<T>
         {
-            _services.AddScoped<IMessageHandler<T>, TImplementation>();
+            _services.AddScoped<INotifyAdapter, TImplementation>();
+            return this;
+        }
+
+        private QueueBuilder SubscribeQueue<T, TImplementation>(string queueName)
+            where T : class
+            where TImplementation : class, IConsumerHandler<T>
+        {
+            _services.AddScoped<IConsumerHandler<T>, TImplementation>();
             queueActions.Add(async (scope) => await SubscribeQueue<T>(scope, queueName));
             return this;
         }
 
         private static async Task SubscribeQueue<T>(IServiceScope scope, string queueName) where T : class
         {
-            var consumer = scope.ServiceProvider.GetRequiredService<IMessageHandler<T>>();
+            var consumer = scope.ServiceProvider.GetRequiredService<IConsumerHandler<T>>();
             var consumerService = scope.ServiceProvider.GetRequiredService<IMessagingConsumerService>();
             await consumerService.SubscribeAsync(queueName, consumer);
         }

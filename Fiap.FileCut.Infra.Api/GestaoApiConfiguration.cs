@@ -3,8 +3,10 @@ using Fiap.FileCut.Core.Handlers;
 using Fiap.FileCut.Core.Interfaces.Applications;
 using Fiap.FileCut.Core.Interfaces.Repository;
 using Fiap.FileCut.Core.Interfaces.Services;
+using Fiap.FileCut.Core.Objects.QueueEvents;
 using Fiap.FileCut.Core.Services;
 using Fiap.FileCut.Infra.Api.Configurations;
+using Fiap.FileCut.Infra.Api.Middlewares;
 using Fiap.FileCut.Infra.Storage.LocalDisk;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.Extensions.DependencyInjection;
@@ -22,7 +24,7 @@ public static class GestaoApiConfiguration
                 .EmailNotify(builder.Configuration);
         await builder.Services.AddQueue(cfg =>
         {
-            cfg.SubscribeQueue<string, StatusUpdateHandler>();
+            cfg.SubscribeQueue<UserNotifyEvent, UserNotifyConsumer>();
         });
 
         builder.Services.AddScoped<IGestaoApplication, GestaoApplication>();
@@ -44,6 +46,7 @@ public static class GestaoApiConfiguration
         app.UseEnvCors();
         app.UseHttpsRedirection();
         app.UseAuth();
+        app.UseMiddleware<ErrorHandlerMiddleware>();
         return Task.CompletedTask;
     }
 }

@@ -1,35 +1,64 @@
-﻿using Fiap.FileCut.Core.Interfaces.Applications;
+﻿using Fiap.FileCut.Core.Exceptions;
+using Fiap.FileCut.Core.Interfaces.Applications;
 using Fiap.FileCut.Core.Interfaces.Services;
 using Fiap.FileCut.Core.Objects;
-using Microsoft.AspNetCore.Http;
-using Microsoft.AspNetCore.Http.Internal;
+using Fiap.FileCut.Core.Objects.Enums;
+using Fiap.FileCut.Infra.Storage.Shared.Models;
 
 namespace Fiap.FileCut.Core.Applications;
 
 public class GestaoApplication(IFileService fileService) : IGestaoApplication
 {
-	public async Task<IFormFile> GetVideoAsync(Guid guid, string videoName, CancellationToken cancellationToken)
-	{
-		return await fileService.GetFileAsync(guid, videoName, cancellationToken);
-	}
+    public async Task<FileStreamResult> GetVideoAsync(Guid guid, string videoName, CancellationToken cancellationToken)
+    {
+        try
+        {
+            return await fileService.GetFileAsync(guid, videoName, cancellationToken);
+        }
+        catch (FileNotFoundException ex)
+        {
+            throw new EntityNotFoundException("File not found", ex);
+        }
+    }
 
-	public async Task<VideoMetadata> GetVideoMetadataAsync(Guid guid, string videoName, CancellationToken cancellationToken)
-	{
-		var file = await fileService.GetFileAsync(guid, videoName, cancellationToken)
-					?? throw new FileLoadException("File not found");
+    public async Task<VideoMetadata> GetVideoMetadataAsync(Guid guid, string videoName, CancellationToken cancellationToken)
+    {
+        try
+        {
+            FileStreamResult file = await fileService.GetFileAsync(guid, videoName, cancellationToken);
+            VideoState videoState = await ReadVideoState(guid, videoName, cancellationToken);
+            return new VideoMetadata(file.FileName, videoState);
+        }
+        catch (FileNotFoundException ex)
+        {
+            throw new EntityNotFoundException("File not found", ex);
+        }
+    }
 
-		// TODO NOSONAR: Implementar a leitura do status do vídeo
+    private async Task<VideoState> ReadVideoState(Guid guid, string videoName, CancellationToken cancellationToken)
+    {
+        try
+        {
+            FileStreamResult status = await fileService.GetFileAsync(guid, $"{videoName}.state", cancellationToken);
+            string state = await new StreamReader(status.FileStream).ReadToEndAsync(cancellationToken);
+            VideoState videoState = Enum.Parse<VideoState>(state);
+            return videoState;
+        }
+        catch (FileNotFoundException)
+        {
+            return VideoState.PENDING;
+        }
+    }
 
-		return new VideoMetadata(file.FileName);
-	}
-
-	public async Task<List<VideoMetadata>> ListAllVideosAsync(Guid guid, CancellationToken cancellationToken)
-	{
+    public async Task<List<VideoMetadata>> ListAllVideosAsync(Guid guid, CancellationToken cancellationToken)
+    {
         var fileNames = await fileService.GetFileNamesAsync(guid, cancellationToken);
-		var metadataTasks = fileNames.Select(file => GetVideoMetadataAsync(guid, file, cancellationToken));
+        var metadataTasks = fileNames
+            .Where(file => !file.EndsWith(".state"))
+            .Select(file => GetVideoMetadataAsync(guid, file, cancellationToken));
 
-		var metadataList = await Task.WhenAll(metadataTasks);
+        var metadataList = await Task.WhenAll(metadataTasks);
 
-		return metadataList.ToList();
-	}
+        return [.. metadataList];
+    }
 }

@@ -4,5 +4,5 @@ namespace Fiap.FileCut.Core.Interfaces.Services;
 
 public interface IMessagingConsumerService
 {
-    Task SubscribeAsync<T>(string queueName, IMessageHandler<T> handler) where T : class;
+    Task SubscribeAsync<T>(string queueName, IConsumerHandler<T> handler) where T : class;
 }

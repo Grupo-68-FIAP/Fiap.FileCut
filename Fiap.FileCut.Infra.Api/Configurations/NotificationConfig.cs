@@ -3,6 +3,7 @@ using Fiap.FileCut.Core.Interfaces.Adapters;
 using Fiap.FileCut.Core.Interfaces.Handlers;
 using Fiap.FileCut.Core.Interfaces.Services;
 using Fiap.FileCut.Core.Services;
+using Fiap.FileCut.Infra.RabbitMq;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Options;
