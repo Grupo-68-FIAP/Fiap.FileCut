@@ -1,4 +1,5 @@
 ﻿using Fiap.FileCut.Infra.Api.Configurations;
+using Fiap.FileCut.Infra.Api.Middlewares;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.Extensions.DependencyInjection;
 
@@ -26,6 +27,7 @@ namespace Fiap.FileCut.Infra.Api
             app.UseEnvCors();
             app.UseHttpsRedirection();
             app.UseAuth();
+            app.UseMiddleware<ErrorHandlerMiddleware>();
             return Task.CompletedTask;
         }
     }
