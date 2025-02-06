@@ -54,8 +54,6 @@ namespace Fiap.FileCut.Infra.RabbitMq
                 mandatory: true,
                 basicProperties: properties
             );
-
-            _logger.LogInformation("[{Queue}] VideoName sent: {Body}", queue, body);
         }
     }
 }
