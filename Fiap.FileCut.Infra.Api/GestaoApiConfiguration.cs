@@ -3,6 +3,7 @@ using Fiap.FileCut.Core.Handlers;
 using Fiap.FileCut.Core.Interfaces.Applications;
 using Fiap.FileCut.Core.Interfaces.Repository;
 using Fiap.FileCut.Core.Interfaces.Services;
+using Fiap.FileCut.Core.Objects.QueueEvents;
 using Fiap.FileCut.Core.Services;
 using Fiap.FileCut.Infra.Api.Configurations;
 using Fiap.FileCut.Infra.Storage.LocalDisk;
@@ -22,7 +23,7 @@ public static class GestaoApiConfiguration
                 .EmailNotify(builder.Configuration);
         await builder.Services.AddQueue(cfg =>
         {
-            cfg.SubscribeQueue<string, StatusUpdateHandler>();
+            cfg.SubscribeQueue<UserNotifyEvent, UserNotifyConsumer>();
         });
 
         builder.Services.AddScoped<IGestaoApplication, GestaoApplication>();

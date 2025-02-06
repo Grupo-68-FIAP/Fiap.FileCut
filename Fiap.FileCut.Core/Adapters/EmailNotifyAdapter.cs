@@ -52,11 +52,11 @@ public class EmailNotifyAdapter(ILogger<EmailNotifyAdapter> logger, ISmtpHandler
         var mailMessage = new MailMessage
         {
             From = _smtpClient.GetFrom(),
-            Subject = notifyContext.Context.Subject,
-            Body = notifyContext.Context.Body,
-            IsBodyHtml = notifyContext.Context.IsBodyHtml
+            Subject = notifyContext.Value.Subject,
+            Body = notifyContext.Value.Body,
+            IsBodyHtml = notifyContext.Value.IsBodyHtml
         };
-        mailMessage.To.Add(notifyContext.Context.To);
+        mailMessage.To.Add(notifyContext.Value.To);
 
         await SendEmailAsync(mailMessage, notifyContext.UserId);
     }
@@ -70,7 +70,7 @@ public class EmailNotifyAdapter(ILogger<EmailNotifyAdapter> logger, ISmtpHandler
     /// <returns></returns>
     public async Task SendMailMessageAsync(NotifyContext<MailMessage> notifyContext)
     {
-        await SendEmailAsync(notifyContext.Context, notifyContext.UserId);
+        await SendEmailAsync(notifyContext.Value, notifyContext.UserId);
     }
 
     private async Task SendEmailAsync(MailMessage message, Guid userId)

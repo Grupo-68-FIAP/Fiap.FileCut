@@ -1,6 +1,7 @@
 ﻿using Fiap.FileCut.Core.Handlers;
 using Fiap.FileCut.Core.Interfaces.Services;
 using Fiap.FileCut.Core.Objects;
+using Fiap.FileCut.Core.Objects.QueueEvents;
 using Microsoft.Extensions.Logging;
 using Moq;
 
@@ -16,9 +17,9 @@ namespace Fiap.FileCut.Core.UnitTests.Handlers
             var notifyService = new Mock<INotifyService>();
             var userService = new Mock<IUserService>();
             userService.Setup(c => c.GetUserAsync(user.Id, default)).ReturnsAsync(user);
-            var logger = new Mock<ILogger<StatusUpdateHandler>>();
-            var handler = new StatusUpdateHandler(notifyService.Object, userService.Object, logger.Object);
-            var context = new NotifyContext<string>("test", user.Id);
+            var logger = new Mock<ILogger<UserNotifyConsumer>>();
+            var handler = new UserNotifyConsumer(notifyService.Object, userService.Object, logger.Object);
+            var context = new NotifyContext<UserNotifyEvent>(new UserNotifyEvent("test"), user.Id);
             // Act
             await handler.HandleAsync(context);
             // Assert

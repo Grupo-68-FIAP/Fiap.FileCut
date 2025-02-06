@@ -20,7 +20,7 @@ public class RabbitMqConsumerService : IMessagingConsumerService
         _logger = logger;
     }
 
-    public async Task SubscribeAsync<T>(string queueName, IMessageHandler<T> handler) where T : class
+    public async Task SubscribeAsync<T>(string queueName, IConsumerHandler<T> handler) where T : class
     {
         await _channel.QueueDeclareAsync(queueName, true, false, false, null);
         var consumer = new AsyncEventingBasicConsumer(_channel);
@@ -31,7 +31,7 @@ public class RabbitMqConsumerService : IMessagingConsumerService
             {
                 _logger.LogDebug("Mensagem recebida da fila {QueueName}", queueName);
                 var body = ea.Body.ToArray();
-                var userId = GetUserId(ea);
+                var userId = GetUserId<T>(ea);
                 var message = JsonSerializer.Deserialize<T>(body);
 
                 if (message != null)
@@ -50,9 +50,9 @@ public class RabbitMqConsumerService : IMessagingConsumerService
         _logger.LogInformation("Consumidor da fila {QueueName} iniciado", queueName);
     }
 
-    private static Guid GetUserId(BasicDeliverEventArgs ea)
+    private static Guid GetUserId<T>(BasicDeliverEventArgs ea) where T : class
     {
-        var byteId = ea.BasicProperties.Headers?["UserID"] as byte[]
+        var byteId = ea.BasicProperties.Headers?[nameof(NotifyContext<T>.UserId)] as byte[]
             ?? throw new MissingMemberException("Cabeçalho 'UserID' não encontrado na mensagem");
         var userId = Encoding.UTF8.GetString(byteId);
         ArgumentNullException.ThrowIfNull(userId);
