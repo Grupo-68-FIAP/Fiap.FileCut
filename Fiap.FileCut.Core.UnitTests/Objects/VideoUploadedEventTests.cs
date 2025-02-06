@@ -1,4 +1,5 @@
-﻿using Fiap.FileCut.Core.Attributes;
+﻿using Castle.Core.Internal;
+using Fiap.FileCut.Core.Attributes;
 using Fiap.FileCut.Core.Objects.Enums;
 using Fiap.FileCut.Core.Objects.QueueEvents;
 
@@ -23,9 +24,7 @@ public class VideoUploadedEventTests
     public void Class_Should_Have_MessageQueue_Attribute()
     {
         // Act
-        var attribute = (MessageQueueAttribute)Attribute.GetCustomAttribute(
-            typeof(VideoUploadedEvent), typeof(MessageQueueAttribute)
-        );
+        var attribute = typeof(VideoUploadedEvent).GetAttributes<MessageQueueAttribute>().FirstOrDefault();
 
         // Assert
         Assert.NotNull(attribute);
