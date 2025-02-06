@@ -1,5 +1,4 @@
-﻿using Fiap.FileCut.Core.Attributes;
-using Fiap.FileCut.Core.Extensions;
+﻿using Fiap.FileCut.Core.Extensions;
 using Fiap.FileCut.Core.Interfaces.Services;
 using Fiap.FileCut.Core.Objects;
 using Microsoft.Extensions.Logging;
@@ -24,18 +23,7 @@ namespace Fiap.FileCut.Infra.RabbitMq
         {
             ArgumentNullException.ThrowIfNull(context.Value);
 
-            var queue = context.Value.GetType().FullName;
-
-            var props = Attribute.GetCustomAttributes(typeof(T));
-
-            foreach (object attr in props)
-            {
-                if (attr is MessageQueueAttribute a)
-                {
-                    queue = a.Queue.GetQueueNameAttribute();
-                    break;
-                }
-            }
+            var queue = MessageQueueExtension.GetQueueName<T>(context.Value.GetType().FullName);
 
             ArgumentException.ThrowIfNullOrWhiteSpace(queue);
 

@@ -42,20 +42,9 @@ public static class QueueConfig
             where T : class
             where TImplementation : class, IConsumerHandler<T>
         {
-            var queueName = typeof(T).FullName;
+            var queueName = MessageQueueExtension.GetQueueName<T>(defaultQueue: typeof(T).FullName);
 
-            var props = Attribute.GetCustomAttributes(typeof(T));
-
-            foreach (object attr in props)
-            {
-                if (attr is MessageQueueAttribute a)
-                {
-                    queueName = a.Queue.GetQueueNameAttribute();
-                    break;
-                }
-            }
-
-            ArgumentNullException.ThrowIfNull(queueName);
+            ArgumentNullException.ThrowIfNullOrWhiteSpace(queueName);
 
             return SubscribeQueue<T, TImplementation>(queueName);
         }
