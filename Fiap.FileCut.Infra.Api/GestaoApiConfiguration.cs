@@ -6,6 +6,7 @@ using Fiap.FileCut.Core.Interfaces.Services;
 using Fiap.FileCut.Core.Objects.QueueEvents;
 using Fiap.FileCut.Core.Services;
 using Fiap.FileCut.Infra.Api.Configurations;
+using Fiap.FileCut.Infra.Api.Middlewares;
 using Fiap.FileCut.Infra.Storage.LocalDisk;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.Extensions.DependencyInjection;
@@ -45,6 +46,7 @@ public static class GestaoApiConfiguration
         app.UseEnvCors();
         app.UseHttpsRedirection();
         app.UseAuth();
+        app.UseMiddleware<ErrorHandlerMiddleware>();
         return Task.CompletedTask;
     }
 }

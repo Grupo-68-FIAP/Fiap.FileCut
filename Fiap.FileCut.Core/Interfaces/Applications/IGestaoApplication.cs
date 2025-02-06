@@ -1,6 +1,5 @@
 ﻿using Fiap.FileCut.Core.Objects;
 using Fiap.FileCut.Infra.Storage.Shared.Models;
-using Microsoft.AspNetCore.Http;
 
 namespace Fiap.FileCut.Core.Interfaces.Applications;
 
