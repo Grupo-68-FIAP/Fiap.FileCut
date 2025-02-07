@@ -1,5 +1,4 @@
 ﻿using Fiap.FileCut.Processing.Services;
-using Moq;
 using System;
 using System.IO;
 using System.IO.Compression;
@@ -53,6 +52,27 @@ namespace Fiap.FileCut.Processing.UnitTests
 
             // Act & Assert
             await Assert.ThrowsAsync<DirectoryNotFoundException>(() => packageService.PackageImagesAsync(nonExistentDirectory));
+        }
+
+        [Fact]
+        public async Task PackageImagesAsync_Should_Return_FilePath()
+        {
+            // Arrange
+            var packageService = new PackageService();
+            var testDirectory = "test_directory";
+            var testFilePath = Path.Combine(testDirectory, "output.zip");
+
+            Directory.CreateDirectory(testDirectory);
+            File.WriteAllText(Path.Combine(testDirectory, "test.txt"), "test content");
+
+            // Act
+            var result = await packageService.PackageImagesAsync(testFilePath);
+
+            // Assert
+            Assert.Equal(testFilePath, result);
+
+            // Cleanup
+            Directory.Delete(testDirectory, true);
         }
     }
 }

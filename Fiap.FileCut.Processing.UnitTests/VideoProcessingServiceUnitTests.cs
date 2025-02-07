@@ -77,5 +77,43 @@ namespace Fiap.FileCut.Processing.UnitTests
                 l => l.LogError(It.IsAny<Exception>(), "Erro durante o processamento do vídeo para o usuário {UserId}", userId),
                 Times.Once);
         }
+
+        [Fact]
+        public async Task ProcessVideoAsync_Should_Throw_OperationCanceledException_When_Cancelled()
+        {
+            // Arrange
+            var service = new VideoProcessingService(_mockLogger.Object, _mockOptions.Object);
+            var userId = Guid.NewGuid();
+            var videoPath = "test_video.mp4";
+            var cts = new CancellationTokenSource();
+            cts.Cancel();
+
+            // Act & Assert
+            await Assert.ThrowsAsync<OperationCanceledException>(() => service.ProcessVideoAsync(userId, videoPath, cts.Token));
+        }
+
+        [Fact]
+        public async Task ProcessVideoAsync_Should_Throw_FileNotFoundException_When_Video_Not_Found()
+        {
+            // Arrange
+            var service = new VideoProcessingService(_mockLogger.Object, _mockOptions.Object);
+            var userId = Guid.NewGuid();
+            var nonExistentVideoPath = "non_existent_video.mp4";
+
+            // Act & Assert
+            await Assert.ThrowsAsync<FileNotFoundException>(() => service.ProcessVideoAsync(userId, nonExistentVideoPath));
+        }
+
+        [Fact]
+        public async Task ProcessVideoAsync_Should_Throw_VideoProcessingException_For_Invalid_Format()
+        {
+            // Arrange
+            var service = new VideoProcessingService(_mockLogger.Object, _mockOptions.Object);
+            var userId = Guid.NewGuid();
+            var invalidFormatVideoPath = "invalid_format_video.xyz";
+
+            // Act & Assert
+            await Assert.ThrowsAsync<VideoProcessingException>(() => service.ProcessVideoAsync(userId, invalidFormatVideoPath));
+        }
     }
 }
