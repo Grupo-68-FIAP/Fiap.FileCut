@@ -1,7 +1,6 @@
 ﻿using Fiap.FileCut.Processing.Services;
 using System;
 using System.IO;
-using System.IO.Compression;
 using System.Threading.Tasks;
 using Xunit;
 
@@ -15,13 +14,13 @@ namespace Fiap.FileCut.Processing.UnitTests
             // Arrange
             var packageService = new PackageService();
             var testDirectory = "test_directory";
-            var testFilePath = Path.Combine(testDirectory, "output.zip");
+            var testFilePath = Path.Combine(testDirectory, "images.zip");
 
             Directory.CreateDirectory(testDirectory);
-            File.WriteAllText(Path.Combine(testDirectory, "test.txt"), "test content");
+            await File.WriteAllTextAsync(Path.Combine(testDirectory, "test.txt"), "test content");
 
             // Act
-            var result = await packageService.PackageImagesAsync(testFilePath);
+            var result = await packageService.PackageImagesAsync(testDirectory);
 
             // Assert
             Assert.True(File.Exists(testFilePath));
@@ -32,41 +31,41 @@ namespace Fiap.FileCut.Processing.UnitTests
         }
 
         [Fact]
-        public async Task PackageImagesAsync_Should_Throw_ArgumentNullException_When_DirectoryName_Is_Null()
+        public async Task PackageImagesAsync_Should_Throw_ArgumentNullException_When_DirectoryPath_Is_Null()
         {
             // Arrange
             var packageService = new PackageService();
-            var invalidFilePath = "invalid_path/output.zip";
+            string? invalidFilePath = null;
 
             // Act & Assert
-            var exception = await Assert.ThrowsAsync<ArgumentNullException>(() => packageService.PackageImagesAsync(invalidFilePath));
-            Assert.Equal("The directory name cannot be null. (Parameter 'filePath')", exception.Message);
+            var exception = await Assert.ThrowsAsync<ArgumentNullException>(() => packageService.PackageImagesAsync(invalidFilePath!));
+            Assert.Equal("The directory path cannot be null or empty. (Parameter 'filePath')", exception.Message);
         }
 
         [Fact]
-        public async Task PackageImagesAsync_Should_Throw_Exception_When_Directory_Does_Not_Exist()
+        public async Task PackageImagesAsync_Should_Throw_DirectoryNotFoundException_When_Directory_Does_Not_Exist()
         {
             // Arrange
             var packageService = new PackageService();
-            var nonExistentDirectory = "non_existent_directory/output.zip";
+            var nonExistentDirectory = "non_existent_directory";
 
             // Act & Assert
             await Assert.ThrowsAsync<DirectoryNotFoundException>(() => packageService.PackageImagesAsync(nonExistentDirectory));
         }
 
         [Fact]
-        public async Task PackageImagesAsync_Should_Return_FilePath()
+        public async Task PackageImagesAsync_Should_Return_ZipFilePath()
         {
             // Arrange
             var packageService = new PackageService();
             var testDirectory = "test_directory";
-            var testFilePath = Path.Combine(testDirectory, "output.zip");
+            var testFilePath = Path.Combine(testDirectory, "images.zip");
 
             Directory.CreateDirectory(testDirectory);
-            File.WriteAllText(Path.Combine(testDirectory, "test.txt"), "test content");
+            await File.WriteAllTextAsync(Path.Combine(testDirectory, "test.txt"), "test content");
 
             // Act
-            var result = await packageService.PackageImagesAsync(testFilePath);
+            var result = await packageService.PackageImagesAsync(testDirectory);
 
             // Assert
             Assert.Equal(testFilePath, result);

@@ -85,11 +85,13 @@ namespace Fiap.FileCut.Processing.UnitTests
             var service = new VideoProcessingService(_mockLogger.Object, _mockOptions.Object);
             var userId = Guid.NewGuid();
             var videoPath = "test_video.mp4";
-            var cts = new CancellationTokenSource();
-            cts.Cancel();
+            using (var cts = new CancellationTokenSource())
+            {
+                await cts.CancelAsync();
 
-            // Act & Assert
-            await Assert.ThrowsAsync<OperationCanceledException>(() => service.ProcessVideoAsync(userId, videoPath, cts.Token));
+                // Act & Assert
+                await Assert.ThrowsAsync<OperationCanceledException>(() => service.ProcessVideoAsync(userId, videoPath, cts.Token));
+            }
         }
 
         [Fact]

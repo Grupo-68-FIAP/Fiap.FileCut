@@ -7,12 +7,26 @@ namespace Fiap.FileCut.Processing.Services
     {
         public async Task<string> PackageImagesAsync(string filePath)
         {
+            if (string.IsNullOrEmpty(filePath))
+            {
+                throw new ArgumentNullException(nameof(filePath), "The directory path cannot be null or empty.");
+            }
+
+            string zipFilePath = Path.Combine(filePath, "images.zip");
+
             await Task.Run(() =>
             {
-                string outputDirectory = Path.GetDirectoryName(filePath) ?? throw new ArgumentNullException(nameof(filePath), "The directory name cannot be null.");
+                if (Directory.Exists(filePath))
+                {
+                    ZipFile.CreateFromDirectory(filePath, zipFilePath);
+                }
+                else
+                {
+                    throw new DirectoryNotFoundException($"The directory '{filePath}' does not exist.");
+                }
             });
 
-            return filePath;
+            return zipFilePath;
         }
     }
 }
