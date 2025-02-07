@@ -117,5 +117,41 @@ namespace Fiap.FileCut.Processing.UnitTests
             // Act & Assert
             await Assert.ThrowsAsync<VideoProcessingException>(() => service.ProcessVideoAsync(userId, invalidFormatVideoPath));
         }
+
+        [Fact]
+        public async Task ProcessVideoAsync_Should_Create_Directories_And_Files()
+        {
+            // Arrange
+            var service = new VideoProcessingService(_mockLogger.Object, _mockOptions.Object);
+            var userId = Guid.NewGuid();
+            var videoPath = "test_video.mp4";
+            var processingFolder = Path.Combine(_processingOptions.WorkingDirectory, userId.ToString(), "test_video_" + Guid.NewGuid());
+            var outputFolder = Path.Combine(processingFolder, "frames");
+
+            // Act
+            var result = await service.ProcessVideoAsync(userId, videoPath);
+
+            // Assert
+            Assert.True(Directory.Exists(outputFolder));
+            Assert.True(File.Exists(result));
+        }
+
+        [Fact]
+        public async Task ProcessVideoAsync_Should_Extract_Frames_At_Interval()
+        {
+            // Arrange
+            var service = new VideoProcessingService(_mockLogger.Object, _mockOptions.Object);
+            var userId = Guid.NewGuid();
+            var videoPath = "test_video.mp4";
+            var processingFolder = Path.Combine(_processingOptions.WorkingDirectory, userId.ToString(), "test_video_" + Guid.NewGuid());
+            var outputFolder = Path.Combine(processingFolder, "frames");
+
+            // Act
+            await service.ProcessVideoAsync(userId, videoPath);
+
+            // Assert
+            var frameFiles = Directory.GetFiles(outputFolder, "frame_*.jpg");
+            Assert.NotEmpty(frameFiles);
+        }
     }
 }

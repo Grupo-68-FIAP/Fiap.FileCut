@@ -73,5 +73,26 @@ namespace Fiap.FileCut.Processing.UnitTests
             // Cleanup
             Directory.Delete(testDirectory, true);
         }
+
+        [Fact]
+        public async Task PackageImagesAsync_Should_Return_Correct_ZipFilePath_When_Directory_Exists()
+        {
+            // Arrange
+            var packageService = new PackageService();
+            var testDirectory = "test_directory";
+            var expectedZipFilePath = Path.Combine(testDirectory, "images.zip");
+
+            Directory.CreateDirectory(testDirectory);
+            await File.WriteAllTextAsync(Path.Combine(testDirectory, "test.txt"), "test content");
+
+            // Act
+            var result = await packageService.PackageImagesAsync(testDirectory);
+
+            // Assert
+            Assert.Equal(expectedZipFilePath, result);
+
+            // Cleanup
+            Directory.Delete(testDirectory, true);
+        }
     }
 }
