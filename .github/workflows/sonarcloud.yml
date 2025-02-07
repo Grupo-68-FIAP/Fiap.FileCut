@@ -34,8 +34,8 @@ jobs:
           key: ${{ runner.os }}-sonar-scanner
           restore-keys: ${{ runner.os }}-sonar-scanner
 
-      - name: Install FFmpeg
-        run: sudo apt update && sudo apt install -y ffmpeg
+      - name: Install FFmpeg (Windows)
+        run: choco install ffmpeg -y
 
       - name: Install SonarCloud scanner
         if: steps.cache-sonar-scanner.outputs.cache-hit != 'true'
