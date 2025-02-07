@@ -34,13 +34,11 @@ jobs:
           key: ${{ runner.os }}-sonar-scanner
           restore-keys: ${{ runner.os }}-sonar-scanner
 
-      - name: Install FFmpeg (Windows)
-        run: choco install ffmpeg -y
-
       - name: Install SonarCloud scanner
         if: steps.cache-sonar-scanner.outputs.cache-hit != 'true'
         shell: powershell
         run: |
+          choco install ffmpeg -y
           New-Item -Path .\.sonar\scanner -ItemType Directory
           dotnet tool update dotnet-sonarscanner --tool-path .\.sonar\scanner
           dotnet tool update dotnet-coverageconverter  --tool-path .\.sonar\scanner
