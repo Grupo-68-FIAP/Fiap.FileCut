@@ -1,15 +1,9 @@
-﻿using Fiap.FileCut.Processing.Services;
-using Fiap.FileCut.Core.Interfaces.Services;
-using Fiap.FileCut.Core.Objects;
-using Fiap.FileCut.Processing.Exceptions;
+﻿using Fiap.FileCut.Core.Objects;
+using Fiap.FileCut.Processing.Services;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 using Moq;
-using System;
-using System.IO;
-using System.Threading;
-using System.Threading.Tasks;
-using Xunit;
+using System.IO.Compression;
 
 namespace Fiap.FileCut.Processing.UnitTests
 {
@@ -25,8 +19,7 @@ namespace Fiap.FileCut.Processing.UnitTests
             _mockOptions = new Mock<IOptions<ProcessingOptions>>();
             _processingOptions = new ProcessingOptions
             {
-                WorkingDirectory = "test_working_directory",
-                FrameIntervalSeconds = 1,
+                FrameIntervalSeconds = 30,
                 FrameWidth = 640,
                 FrameHeight = 480
             };
@@ -34,124 +27,20 @@ namespace Fiap.FileCut.Processing.UnitTests
         }
 
         [Fact]
-        public async Task ProcessVideoAsync_Should_Process_Video_And_Return_ZipFilePath()
+        public async Task ProcessVideoAsync_WithValidParameters_ShouldReturnZipFilePath()
         {
             // Arrange
-            var service = new VideoProcessingService(_mockLogger.Object, _mockOptions.Object);
-            var userId = Guid.NewGuid();
-            var videoPath = "test_video.mp4";
-
+            var videoPath = "sample.mp4";
+            using var videoStream = File.OpenRead(Path.Combine(Directory.GetCurrentDirectory(), "Resources", videoPath));
+            var videoProcessingService = new VideoProcessingService(_mockLogger.Object, _mockOptions.Object);
             // Act
-            var result = await service.ProcessVideoAsync(userId, videoPath);
-
+            var zipStream = await videoProcessingService.ProcessVideoAsync(videoStream, CancellationToken.None);
             // Assert
-            Assert.NotNull(result);
-            Assert.EndsWith(".zip", result);
-        }
+            Assert.NotNull(zipStream);
 
-        [Fact]
-        public async Task ProcessVideoAsync_Should_Throw_VideoProcessingException_On_Error()
-        {
-            // Arrange
-            var service = new VideoProcessingService(_mockLogger.Object, _mockOptions.Object);
-            var userId = Guid.NewGuid();
-            var invalidVideoPath = "invalid_video_path.mp4";
-
-            // Act & Assert
-            await Assert.ThrowsAsync<VideoProcessingException>(() => service.ProcessVideoAsync(userId, invalidVideoPath));
-        }
-
-        [Fact]
-        public async Task ProcessVideoAsync_Should_Log_Error_On_Exception()
-        {
-            // Arrange
-            var service = new VideoProcessingService(_mockLogger.Object, _mockOptions.Object);
-            var userId = Guid.NewGuid();
-            var invalidVideoPath = "invalid_video_path.mp4";
-
-            // Act
-            await Assert.ThrowsAsync<VideoProcessingException>(() => service.ProcessVideoAsync(userId, invalidVideoPath));
-
-            // Assert
-            _mockLogger.Verify(
-                l => l.LogError(It.IsAny<Exception>(), "Erro durante o processamento do vídeo para o usuário {UserId}", userId),
-                Times.Once);
-        }
-
-        [Fact]
-        public async Task ProcessVideoAsync_Should_Throw_OperationCanceledException_When_Cancelled()
-        {
-            // Arrange
-            var service = new VideoProcessingService(_mockLogger.Object, _mockOptions.Object);
-            var userId = Guid.NewGuid();
-            var videoPath = "test_video.mp4";
-            using (var cts = new CancellationTokenSource())
-            {
-                await cts.CancelAsync();
-
-                // Act & Assert
-                await Assert.ThrowsAsync<OperationCanceledException>(() => service.ProcessVideoAsync(userId, videoPath, cts.Token));
-            }
-        }
-
-        [Fact]
-        public async Task ProcessVideoAsync_Should_Throw_FileNotFoundException_When_Video_Not_Found()
-        {
-            // Arrange
-            var service = new VideoProcessingService(_mockLogger.Object, _mockOptions.Object);
-            var userId = Guid.NewGuid();
-            var nonExistentVideoPath = "non_existent_video.mp4";
-
-            // Act & Assert
-            await Assert.ThrowsAsync<FileNotFoundException>(() => service.ProcessVideoAsync(userId, nonExistentVideoPath));
-        }
-
-        [Fact]
-        public async Task ProcessVideoAsync_Should_Throw_VideoProcessingException_For_Invalid_Format()
-        {
-            // Arrange
-            var service = new VideoProcessingService(_mockLogger.Object, _mockOptions.Object);
-            var userId = Guid.NewGuid();
-            var invalidFormatVideoPath = "invalid_format_video.xyz";
-
-            // Act & Assert
-            await Assert.ThrowsAsync<VideoProcessingException>(() => service.ProcessVideoAsync(userId, invalidFormatVideoPath));
-        }
-
-        [Fact]
-        public async Task ProcessVideoAsync_Should_Create_Directories_And_Files()
-        {
-            // Arrange
-            var service = new VideoProcessingService(_mockLogger.Object, _mockOptions.Object);
-            var userId = Guid.NewGuid();
-            var videoPath = "test_video.mp4";
-            var processingFolder = Path.Combine(_processingOptions.WorkingDirectory, userId.ToString(), "test_video_" + Guid.NewGuid());
-            var outputFolder = Path.Combine(processingFolder, "frames");
-
-            // Act
-            var result = await service.ProcessVideoAsync(userId, videoPath);
-
-            // Assert
-            Assert.True(Directory.Exists(outputFolder));
-            Assert.True(File.Exists(result));
-        }
-
-        [Fact]
-        public async Task ProcessVideoAsync_Should_Extract_Frames_At_Interval()
-        {
-            // Arrange
-            var service = new VideoProcessingService(_mockLogger.Object, _mockOptions.Object);
-            var userId = Guid.NewGuid();
-            var videoPath = "test_video.mp4";
-            var processingFolder = Path.Combine(_processingOptions.WorkingDirectory, userId.ToString(), "test_video_" + Guid.NewGuid());
-            var outputFolder = Path.Combine(processingFolder, "frames");
-
-            // Act
-            await service.ProcessVideoAsync(userId, videoPath);
-
-            // Assert
-            var frameFiles = Directory.GetFiles(outputFolder, "frame_*.jpg");
-            Assert.NotEmpty(frameFiles);
+            using var archive = new ZipArchive(zipStream, ZipArchiveMode.Read, leaveOpen: true);
+            // O video de exemplo tem 02:39 de duração, com intervalo de 30 segundos, teremos 6 frames
+            Assert.Equal(6, archive.Entries.Count);
         }
     }
 }

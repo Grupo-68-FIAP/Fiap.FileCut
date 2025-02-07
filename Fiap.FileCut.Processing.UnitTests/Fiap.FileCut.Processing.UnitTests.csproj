@@ -10,6 +10,16 @@
 	</PropertyGroup>
 
 	<ItemGroup>
+	  <None Remove="sample.mp4" />
+	</ItemGroup>
+
+	<ItemGroup>
+	  <Content Include="Resources\sample.mp4">
+	    <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+	  </Content>
+	</ItemGroup>
+
+	<ItemGroup>
 		<PackageReference Include="coverlet.collector" Version="6.0.4">
 			<PrivateAssets>all</PrivateAssets>
 			<IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>

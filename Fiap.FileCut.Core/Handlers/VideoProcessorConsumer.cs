@@ -7,10 +7,10 @@ using Microsoft.Extensions.Logging;
 namespace Fiap.FileCut.Core.Handlers;
 
 public class VideoProcessorConsumer(
+    IFileService fileService,
     INotifyService notifyService,
-    ILogger<VideoProcessorConsumer> logger,
-    IVideoProcessingService videoProcessingService, 
-    IPackageService packageService) : IConsumerHandler<VideoUploadedEvent>
+    IVideoProcessingService videoProcessingService,
+    ILogger<VideoProcessorConsumer> logger) : IConsumerHandler<VideoUploadedEvent>
 {
     public async Task HandleAsync(NotifyContext<VideoUploadedEvent> context)
     {
@@ -18,19 +18,19 @@ public class VideoProcessorConsumer(
         UserNotifyEvent evt;
         try
         {
-            string zipFilePath = await videoProcessingService.ProcessVideoAsync(context.UserId, context.Value.VideoName);
-            logger.LogInformation("Video processado com sucesso");
+            var video = await fileService.GetFileAsync(context.UserId, context.Value.VideoName, CancellationToken.None);
 
-            // Empacotamento das imagens
-            await packageService.PackageImagesAsync(zipFilePath);
-            logger.LogInformation("Imagens empacotadas");
+            var zipstream = await videoProcessingService.ProcessVideoAsync(video.FileStream);
+
+            var zipName = Path.ChangeExtension(context.Value.VideoName, ".zip");
+
+            await fileService.SaveFileAsync(context.UserId, zipName, zipstream, CancellationToken.None);
 
             evt = new UserNotifyEvent(context.Value.VideoName)
             {
-                PackName = Path.GetFileName(zipFilePath),
+                PackName = Path.GetFileName(zipName),
                 IsSuccess = true
             };
-
         }
         catch (Exception ex)
         {

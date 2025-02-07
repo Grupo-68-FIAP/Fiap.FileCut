@@ -2,5 +2,5 @@
 
 public interface IVideoProcessingService
 {
-        Task<string> ProcessVideoAsync(Guid userId, string videoPath, CancellationToken cancellationToken = default);
+        Task<Stream> ProcessVideoAsync(Stream video, CancellationToken cancellationToken = default);
 }
