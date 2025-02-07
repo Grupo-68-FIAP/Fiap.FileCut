@@ -3,7 +3,6 @@ using FFMpegCore;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 using System.Drawing;
-using System.IO.Compression;
 using Fiap.FileCut.Processing.Exceptions;
 using Fiap.FileCut.Core.Objects;
 
@@ -20,18 +19,20 @@ public class VideoProcessingService : IVideoProcessingService
         _options = options.Value;
     }
 
-    public async Task ProcessVideoAsync(Guid userId, string videoPath)
+    public async Task<string> ProcessVideoAsync(Guid userId, string videoPath, CancellationToken cancellationToken = default)
     {
         try
         {
             // Gerar identificador único para o processamento
             var processId = Guid.NewGuid();
 
+            var videoFileName = Path.GetFileNameWithoutExtension(videoPath);
+
             // Criar estrutura de diretórios
             var processingFolder = Path.Combine(
                 _options.WorkingDirectory, 
-                userId.ToString(), 
-                $"processing_{processId}");
+                userId.ToString(),
+                $"{videoFileName}_{processId}");
 
             // Configuração de Diretório
             var outputFolder = Path.Combine(processingFolder, "frames");
@@ -54,6 +55,8 @@ public class VideoProcessingService : IVideoProcessingService
             // Extração de Frames
             for (var currentTime = TimeSpan.Zero; currentTime < duration; currentTime += interval)
             {
+                cancellationToken.ThrowIfCancellationRequested();
+
                 // Geração do Frame
                 var outputPath = Path.Combine(outputFolder, $"frame_{currentTime.TotalSeconds}.jpg");
                 await FFMpeg.SnapshotAsync(
@@ -63,15 +66,10 @@ public class VideoProcessingService : IVideoProcessingService
                     currentTime);
             }
 
-
             // Criação do ZIP
-           var zipFileName = _options.ZipFileNameFormat
-            .Replace("{userId}", userId.ToString())
-            .Replace("{processId}", processId.ToString());        
+            var zipFileName = $"{videoFileName}_{processId}.zip";
 
-            var zipFilePath = Path.Combine(processingFolder, $"{zipFileName}.zip");
-            ZipFile.CreateFromDirectory(outputFolder, zipFilePath);
-
+            return Path.Combine(processingFolder, zipFileName);
         }
         catch (Exception ex)
         {

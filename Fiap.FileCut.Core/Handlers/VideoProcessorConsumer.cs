@@ -8,7 +8,7 @@ namespace Fiap.FileCut.Core.Handlers;
 
 public class VideoProcessorConsumer(
     INotifyService notifyService,
-    ILogger<VideoProcessorConsumer> logger) : IConsumerHandler<VideoUploadedEvent>
+    ILogger<VideoProcessorConsumer> logger, IVideoProcessingService videoProcessingService, IPackageService packageService) : IConsumerHandler<VideoUploadedEvent>
 {
     public async Task HandleAsync(NotifyContext<VideoUploadedEvent> context)
     {
@@ -16,16 +16,19 @@ public class VideoProcessorConsumer(
         UserNotifyEvent evt;
         try
         {
-            //TODO NOSONAR: VANESSA - Implementar processamento do vídeo
+            string zipFilePath = await videoProcessingService.ProcessVideoAsync(context.UserId, context.Value.VideoName);
             logger.LogInformation("Video processado com sucesso");
 
-            //TODO NOSONAR: VANESSA - Implementar empacotamento das imagens
+            // Empacotamento das imagens
+            await packageService.PackageImagesAsync(zipFilePath);
             logger.LogInformation("Imagens empacotadas");
 
             evt = new UserNotifyEvent(context.Value.VideoName)
             {
-                PackName = "videoExemplo.zip"
+                PackName = Path.GetFileName(zipFilePath),
+                IsSuccess = true
             };
+
         }
         catch (Exception ex)
         {
