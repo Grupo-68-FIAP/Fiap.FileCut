@@ -10,7 +10,6 @@ namespace Fiap.FileCut.Processing.Services
             await Task.Run(() =>
             {
                 string outputDirectory = Path.GetDirectoryName(filePath) ?? throw new ArgumentNullException(nameof(filePath), "The directory name cannot be null.");
-                ZipFile.CreateFromDirectory(outputDirectory, filePath);
             });
 
             return filePath;

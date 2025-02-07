@@ -46,7 +46,8 @@ public class VideoProcessingService : IVideoProcessingService
 
             var videoInfo = await FFProbe.AnalyseAsync(
                 videoPath, 
-                analysisOptions);
+                analysisOptions,
+                cancellationToken);
 
             // Parâmetros de Processamento
             var duration = videoInfo.Duration;
