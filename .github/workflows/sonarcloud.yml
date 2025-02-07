@@ -34,11 +34,22 @@ jobs:
           key: ${{ runner.os }}-sonar-scanner
           restore-keys: ${{ runner.os }}-sonar-scanner
 
+      - name: Cache FFmpeg installation
+        id: cache-ffmpeg
+        uses: actions/cache@v4
+        with:
+          path: C:\ProgramData\chocolatey\lib\ffmpeg
+          key: ${{ runner.os }}-ffmpeg
+          restore-keys: ${{ runner.os }}-ffmpeg
+
+      - name: Install FFmpeg (Windows)
+        if: steps.cache-ffmpeg.outputs.cache-hit != 'true'
+        run: choco install ffmpeg -y
+
       - name: Install SonarCloud scanner
-        #if: steps.cache-sonar-scanner.outputs.cache-hit != 'true'
+        if: steps.cache-sonar-scanner.outputs.cache-hit != 'true'
         shell: powershell
         run: |
-          choco install ffmpeg -y
           New-Item -Path .\.sonar\scanner -ItemType Directory
           dotnet tool update dotnet-sonarscanner --tool-path .\.sonar\scanner
           dotnet tool update dotnet-coverageconverter  --tool-path .\.sonar\scanner
