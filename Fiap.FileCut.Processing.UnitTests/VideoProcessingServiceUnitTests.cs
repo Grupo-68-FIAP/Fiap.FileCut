@@ -1,103 +1,81 @@
-﻿using Fiap.FileCut.Core.Handlers;
+﻿using Fiap.FileCut.Processing.Services;
 using Fiap.FileCut.Core.Interfaces.Services;
 using Fiap.FileCut.Core.Objects;
-using Fiap.FileCut.Core.Objects.QueueEvents;
+using Fiap.FileCut.Processing.Exceptions;
 using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Options;
 using Moq;
+using System;
+using System.IO;
+using System.Threading;
+using System.Threading.Tasks;
+using Xunit;
 
-namespace Fiap.FileCut.Core.UnitTests.Handlers;
-
-public class VideoProcessorConsumerTests
+namespace Fiap.FileCut.Processing.UnitTests
 {
-    [Fact]
-    public async Task HandleAsync_Should_Send_Correct_Notification_On_Success()
+    public class VideoProcessingServiceUnitTests
     {
-        // Arrange
-        var mockNotifyService = new Mock<INotifyService>();
-        var mockLogger = new Mock<ILogger<VideoProcessorConsumer>>();
-        var videoProcessingServiceMock = new Mock<IVideoProcessingService>();
-        var packageServiceMock = new Mock<IPackageService>();
+        private readonly Mock<ILogger<VideoProcessingService>> _mockLogger;
+        private readonly Mock<IOptions<ProcessingOptions>> _mockOptions;
+        private readonly ProcessingOptions _processingOptions;
 
-        var consumer = new VideoProcessorConsumer(
-            mockNotifyService.Object,
-            mockLogger.Object,
-            videoProcessingServiceMock.Object,
-            packageServiceMock.Object);
+        public VideoProcessingServiceUnitTests()
+        {
+            _mockLogger = new Mock<ILogger<VideoProcessingService>>();
+            _mockOptions = new Mock<IOptions<ProcessingOptions>>();
+            _processingOptions = new ProcessingOptions
+            {
+                WorkingDirectory = "test_working_directory",
+                FrameIntervalSeconds = 1,
+                FrameWidth = 640,
+                FrameHeight = 480
+            };
+            _mockOptions.Setup(o => o.Value).Returns(_processingOptions);
+        }
 
-        var userEvent = new VideoUploadedEvent("TesteVideo");
-        var context = new NotifyContext<VideoUploadedEvent>(userEvent, Guid.NewGuid());
+        [Fact]
+        public async Task ProcessVideoAsync_Should_Process_Video_And_Return_ZipFilePath()
+        {
+            // Arrange
+            var service = new VideoProcessingService(_mockLogger.Object, _mockOptions.Object);
+            var userId = Guid.NewGuid();
+            var videoPath = "test_video.mp4";
 
-        videoProcessingServiceMock
-            .Setup(v => v.ProcessVideoAsync(It.IsAny<Guid>(), It.IsAny<string>(), It.IsAny<CancellationToken>()))
-            .ReturnsAsync("path/to/zipfile.zip");
+            // Act
+            var result = await service.ProcessVideoAsync(userId, videoPath);
 
-        // Act
-        await consumer.HandleAsync(context);
+            // Assert
+            Assert.NotNull(result);
+            Assert.EndsWith(".zip", result);
+        }
 
-        // Assert
-        mockNotifyService.Verify(s => s.NotifyAsync(It.Is<NotifyContext<UserNotifyEvent>>(c => c.Value.IsSuccess)), Times.Once);
-        mockLogger.Verify(l => l.LogInformation("Video em processamento"), Times.Once);
-        mockLogger.Verify(l => l.LogInformation("Video processado com sucesso"), Times.Once);
-        mockLogger.Verify(l => l.LogInformation("Imagens empacotadas"), Times.Once);
-    }
+        [Fact]
+        public async Task ProcessVideoAsync_Should_Throw_VideoProcessingException_On_Error()
+        {
+            // Arrange
+            var service = new VideoProcessingService(_mockLogger.Object, _mockOptions.Object);
+            var userId = Guid.NewGuid();
+            var invalidVideoPath = "invalid_video_path.mp4";
 
-    [Fact]
-    public async Task HandleAsync_Should_Send_Correct_Notification_On_Failure()
-    {
-        // Arrange
-        var mockNotifyService = new Mock<INotifyService>();
-        var mockLogger = new Mock<ILogger<VideoProcessorConsumer>>();
-        var videoProcessingServiceMock = new Mock<IVideoProcessingService>();
-        var packageServiceMock = new Mock<IPackageService>();
+            // Act & Assert
+            await Assert.ThrowsAsync<VideoProcessingException>(() => service.ProcessVideoAsync(userId, invalidVideoPath));
+        }
 
-        var consumer = new VideoProcessorConsumer(
-            mockNotifyService.Object,
-            mockLogger.Object,
-            videoProcessingServiceMock.Object,
-            packageServiceMock.Object);
+        [Fact]
+        public async Task ProcessVideoAsync_Should_Log_Error_On_Exception()
+        {
+            // Arrange
+            var service = new VideoProcessingService(_mockLogger.Object, _mockOptions.Object);
+            var userId = Guid.NewGuid();
+            var invalidVideoPath = "invalid_video_path.mp4";
 
-        var userEvent = new VideoUploadedEvent("TesteVideo");
-        var context = new NotifyContext<VideoUploadedEvent>(userEvent, Guid.NewGuid());
+            // Act
+            await Assert.ThrowsAsync<VideoProcessingException>(() => service.ProcessVideoAsync(userId, invalidVideoPath));
 
-        videoProcessingServiceMock
-            .Setup(v => v.ProcessVideoAsync(context.UserId, context.Value.VideoName, It.IsAny<CancellationToken>()))
-            .ThrowsAsync(new Exception("Processing error"));
-
-        // Act
-        await consumer.HandleAsync(context);
-
-        // Assert
-        mockNotifyService.Verify(s => s.NotifyAsync(It.Is<NotifyContext<UserNotifyEvent>>(c => !c.Value.IsSuccess && c.Value.ErrorMessage == "Processing error")), Times.Once);
-        mockLogger.Verify(l => l.LogInformation("Video em processamento"), Times.Once);
-        mockLogger.Verify(l => l.LogError(It.IsAny<Exception>(), "Erro ao processar vídeo"), Times.Once);
-    }
-
-    [Fact]
-    public async Task HandleAsync_Should_Package_Images()
-    {
-        // Arrange
-        var mockNotifyService = new Mock<INotifyService>();
-        var mockLogger = new Mock<ILogger<VideoProcessorConsumer>>();
-        var videoProcessingServiceMock = new Mock<IVideoProcessingService>();
-        var packageServiceMock = new Mock<IPackageService>();
-
-        var consumer = new VideoProcessorConsumer(
-            mockNotifyService.Object,
-            mockLogger.Object,
-            videoProcessingServiceMock.Object,
-            packageServiceMock.Object);
-
-        var userEvent = new VideoUploadedEvent("TesteVideo");
-        var context = new NotifyContext<VideoUploadedEvent>(userEvent, Guid.NewGuid());
-
-        videoProcessingServiceMock
-            .Setup(v => v.ProcessVideoAsync(context.UserId, context.Value.VideoName, It.IsAny<CancellationToken>()))
-            .ReturnsAsync("path/to/zipfile.zip");
-
-        // Act
-        await consumer.HandleAsync(context);
-
-        // Assert
-        packageServiceMock.Verify(p => p.PackageImagesAsync("path/to/zipfile.zip"), Times.Once);
+            // Assert
+            _mockLogger.Verify(
+                l => l.LogError(It.IsAny<Exception>(), "Erro durante o processamento do vídeo para o usuário {UserId}", userId),
+                Times.Once);
+        }
     }
 }
