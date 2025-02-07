@@ -8,7 +8,9 @@ namespace Fiap.FileCut.Core.Handlers;
 
 public class VideoProcessorConsumer(
     INotifyService notifyService,
-    ILogger<VideoProcessorConsumer> logger, IVideoProcessingService videoProcessingService, IPackageService packageService) : IConsumerHandler<VideoUploadedEvent>
+    ILogger<VideoProcessorConsumer> logger,
+    IVideoProcessingService videoProcessingService, 
+    IPackageService packageService) : IConsumerHandler<VideoUploadedEvent>
 {
     public async Task HandleAsync(NotifyContext<VideoUploadedEvent> context)
     {

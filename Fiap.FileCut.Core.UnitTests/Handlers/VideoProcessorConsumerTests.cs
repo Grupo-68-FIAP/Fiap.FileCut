@@ -15,8 +15,10 @@ public class VideoProcessorConsumerTests
         // Arrange
         var mockNotifyService = new Mock<INotifyService>();
         var mockUserService = new Mock<IUserService>();
+        var videoProcessingServiceMock = new Mock<IVideoProcessingService>();
+        var packageServiceMock = new Mock<IPackageService>();
         var mockLogger = new Mock<ILogger<VideoProcessorConsumer>>();
-        var consumer = new VideoProcessorConsumer(mockNotifyService.Object, mockLogger.Object);
+        var consumer = new VideoProcessorConsumer(mockNotifyService.Object, mockLogger.Object, videoProcessingServiceMock.Object, packageServiceMock.Object);
         var userEvent = new VideoUploadedEvent("TesteVideo");
         var context = new NotifyContext<VideoUploadedEvent>(userEvent, Guid.NewGuid());
         var user = new User { Email = "test@example.com" };
