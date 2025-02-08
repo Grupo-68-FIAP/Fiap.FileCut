@@ -8,4 +8,5 @@ public interface IGestaoApplication
     Task<List<VideoMetadata>> ListAllVideosAsync(Guid guid, CancellationToken cancellationToken);
     Task<VideoMetadata> GetVideoMetadataAsync(Guid guid, string videoName, CancellationToken cancellationToken);
     Task<FileStreamResult> GetVideoAsync(Guid guid, string videoName, CancellationToken cancellationToken);
+    Task<FileStreamResult> GetFramesAsync(Guid guid, string videoName, CancellationToken cancellationToken);
 }
