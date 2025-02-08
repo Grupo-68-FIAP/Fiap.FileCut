@@ -2,4 +2,5 @@
 
 public interface IUploadApplication
 {
+    Task<bool> UploadFileAsync(Guid userId, string fileName, Stream fileStream, CancellationToken cancellationToken);   
 }
