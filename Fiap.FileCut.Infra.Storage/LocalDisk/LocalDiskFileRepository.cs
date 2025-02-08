@@ -9,7 +9,7 @@ public class LocalDiskFileRepository : IFileRepository
 
 	public LocalDiskFileRepository()
 	{
-		_localStorageFolderPath = Path.Combine(Directory.GetCurrentDirectory(), "LocalStorage");
+		_localStorageFolderPath = Path.Combine(Path.GetTempPath(), "Fiap-FileCute-LocalStorage");
 		EnsureDirectoryExists(_localStorageFolderPath);
 	}
 

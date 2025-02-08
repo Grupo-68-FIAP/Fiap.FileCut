@@ -6,11 +6,12 @@ namespace Fiap.FileCut.Core.InfraStorage.UnitTests.LocalDisk
 {
 	public class LocalDiskFileRepositoryUnitTests
 	{
-		private readonly LocalDiskFileRepository _fileRepository;
+		private readonly string localStorageFolderPath = Path.Combine(Path.GetTempPath(), "Fiap-FileCute-LocalStorage");
+        private readonly LocalDiskFileRepository _fileRepository;
 
 		public LocalDiskFileRepositoryUnitTests()
 		{
-			_fileRepository = new LocalDiskFileRepository();
+            _fileRepository = new LocalDiskFileRepository();
 		}
 
 		[Fact]
@@ -20,7 +21,7 @@ namespace Fiap.FileCut.Core.InfraStorage.UnitTests.LocalDisk
 			var userId = Guid.NewGuid();
 			var fileName = "testfile.txt";
 			var cancellationToken = CancellationToken.None;
-			var userFolderPath = Path.Combine(Directory.GetCurrentDirectory(), "LocalStorage", userId.ToString());
+			var userFolderPath = Path.Combine(localStorageFolderPath, userId.ToString());
 
 			Directory.CreateDirectory(userFolderPath);
 			File.WriteAllText(Path.Combine(userFolderPath, fileName), "test content");
@@ -40,7 +41,7 @@ namespace Fiap.FileCut.Core.InfraStorage.UnitTests.LocalDisk
 			var userId = Guid.NewGuid();
 			var fileName = "testfile.txt";
 			var cancellationToken = CancellationToken.None;
-			var userFolderPath = Path.Combine(Directory.GetCurrentDirectory(), "LocalStorage", userId.ToString());
+			var userFolderPath = Path.Combine(localStorageFolderPath, userId.ToString());
 			Directory.CreateDirectory(userFolderPath);
 
 			var filePath = Path.Combine(userFolderPath, fileName);
@@ -78,7 +79,7 @@ namespace Fiap.FileCut.Core.InfraStorage.UnitTests.LocalDisk
 			// Arrange
 			var userId = Guid.NewGuid();
 			var cancellationToken = CancellationToken.None;
-			var userFolderPath = Path.Combine(Directory.GetCurrentDirectory(), "LocalStorage", userId.ToString());
+			var userFolderPath = Path.Combine(localStorageFolderPath, userId.ToString());
 
 			Directory.CreateDirectory(userFolderPath);
 			File.WriteAllText(Path.Combine(userFolderPath, "file1.txt"), "content 1");
@@ -117,7 +118,7 @@ namespace Fiap.FileCut.Core.InfraStorage.UnitTests.LocalDisk
 			// Arrange
 			var userId = Guid.NewGuid();
 			var cancellationToken = CancellationToken.None;
-			var userFolderPath = Path.Combine(Directory.GetCurrentDirectory(), "LocalStorage", userId.ToString());
+			var userFolderPath = Path.Combine(localStorageFolderPath, userId.ToString());
 
 			if (Directory.Exists(userFolderPath))
 			{
@@ -138,7 +139,7 @@ namespace Fiap.FileCut.Core.InfraStorage.UnitTests.LocalDisk
 			// Arrange
 			var userId = Guid.NewGuid();
 			var cancellationToken = CancellationToken.None;
-			var userFolderPath = Path.Combine(Directory.GetCurrentDirectory(), "LocalStorage", userId.ToString());
+			var userFolderPath = Path.Combine(localStorageFolderPath, userId.ToString());
 
 			Directory.CreateDirectory(userFolderPath);
 			File.WriteAllText(Path.Combine(userFolderPath, "file1.txt"), "content 1");
@@ -158,7 +159,7 @@ namespace Fiap.FileCut.Core.InfraStorage.UnitTests.LocalDisk
 			// Arrange
 			var userId = Guid.NewGuid(); 
 			var cancellationToken = CancellationToken.None;
-			var userFolderPath = Path.Combine(Directory.GetCurrentDirectory(), "LocalStorage", userId.ToString());
+			var userFolderPath = Path.Combine(localStorageFolderPath, userId.ToString());
 
 			if (Directory.Exists(userFolderPath))
 			{
@@ -180,7 +181,7 @@ namespace Fiap.FileCut.Core.InfraStorage.UnitTests.LocalDisk
 			var userId = Guid.NewGuid();
 			var fileName = "testfile.txt";
 			var cancellationToken = CancellationToken.None;
-			var userFolderPath = Path.Combine(Directory.GetCurrentDirectory(), "LocalStorage", userId.ToString());
+			var userFolderPath = Path.Combine(localStorageFolderPath, userId.ToString());
 
 			Directory.CreateDirectory(userFolderPath);
 			File.WriteAllText(Path.Combine(userFolderPath, fileName), "test content");
@@ -216,7 +217,7 @@ namespace Fiap.FileCut.Core.InfraStorage.UnitTests.LocalDisk
 			var fileName = "testfile.txt";
 			var fileStream = new MemoryStream(new byte[10]); 
 			var cancellationToken = CancellationToken.None;
-			var userFolderPath = Path.Combine(Directory.GetCurrentDirectory(), "LocalStorage", userId.ToString());
+			var userFolderPath = Path.Combine(localStorageFolderPath, userId.ToString());
 
 			Directory.CreateDirectory(userFolderPath);
 
@@ -236,7 +237,7 @@ namespace Fiap.FileCut.Core.InfraStorage.UnitTests.LocalDisk
 			var fileName = "testfile.txt";
 			var fileStream = new MemoryStream(); // Stream vazio (simula um arquivo com comprimento 0)
 			var cancellationToken = CancellationToken.None;
-			var userFolderPath = Path.Combine(Directory.GetCurrentDirectory(), "LocalStorage", userId.ToString());
+			var userFolderPath = Path.Combine(localStorageFolderPath, userId.ToString());
 
 			Directory.CreateDirectory(userFolderPath);
 

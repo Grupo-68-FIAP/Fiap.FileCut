@@ -26,11 +26,6 @@ public class VideoProcessingService(
             logger.LogDebug("Iniciando processamento de vídeo");
             var videoName = $"{processId}.mp4";
 
-            // Parâmetros de Processamento
-            var videoInfo = await FFProbe.AnalyseAsync(video, cancellationToken: cancellationToken);
-            var duration = videoInfo.Duration;
-            var interval = TimeSpan.FromSeconds(_options.FrameIntervalSeconds);
-
             // Salvar o arquivo de vídeo
             var localVideo = Path.Combine(basePath, videoName);
             video.Seek(0, SeekOrigin.Begin);
@@ -38,6 +33,11 @@ public class VideoProcessingService(
             {
                 await video.CopyToAsync(fileStream, cancellationToken);
             }
+
+            // Parâmetros de Processamento
+            var videoInfo = await FFProbe.AnalyseAsync(localVideo, cancellationToken: cancellationToken);
+            var duration = videoInfo.Duration;
+            var interval = TimeSpan.FromSeconds(_options.FrameIntervalSeconds);
 
             // Extração de Frames
             for (var currentTime = TimeSpan.Zero; currentTime < duration; currentTime += interval)
