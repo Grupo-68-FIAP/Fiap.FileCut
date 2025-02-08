@@ -61,4 +61,10 @@ public class GestaoApplication(IFileService fileService) : IGestaoApplication
 
         return [.. metadataList];
     }
+
+    public async Task<FileStreamResult> GetFramesAsync(Guid guid, string videoName, CancellationToken cancellationToken)
+    {
+        var zipFileName = Path.ChangeExtension(videoName, ".zip");
+        return await fileService.GetFileAsync(guid, zipFileName, cancellationToken);
+    }
 }

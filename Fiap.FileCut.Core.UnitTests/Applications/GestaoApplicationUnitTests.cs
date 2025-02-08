@@ -1,10 +1,8 @@
 ﻿using Fiap.FileCut.Core.Applications;
 using Fiap.FileCut.Core.Exceptions;
 using Fiap.FileCut.Core.Interfaces.Services;
-using Fiap.FileCut.Core.Objects;
 using Fiap.FileCut.Core.Objects.Enums;
 using Fiap.FileCut.Infra.Storage.Shared.Models;
-using Microsoft.AspNetCore.Http;
 using Moq;
 using System.Text;
 
@@ -12,26 +10,26 @@ namespace Fiap.FileCut.Core.UnitTests.Applications;
 
 public class GestaoApplicationUnitTests
 {
-	[Fact]
-	public async Task GetVideoAsync_WhenCalled_ReturnsVideo()
-	{
-		// Arrange
-		var fileService = new Mock<IFileService>();
-		var gestaoApplication = new GestaoApplication(fileService.Object);
-		var guid = Guid.NewGuid();
-		var videoName = "video.mp4";
-		var fileStream = new MemoryStream([1, 2, 3]); 
-		var formFile = new FileStreamResult(videoName, fileStream); 
-		fileService.Setup(x => x.GetFileAsync(guid, videoName, CancellationToken.None)).ReturnsAsync(formFile);
+    [Fact]
+    public async Task GetVideoAsync_WhenCalled_ReturnsVideo()
+    {
+        // Arrange
+        var fileService = new Mock<IFileService>();
+        var gestaoApplication = new GestaoApplication(fileService.Object);
+        var guid = Guid.NewGuid();
+        var videoName = "video.mp4";
+        var fileStream = new MemoryStream([1, 2, 3]);
+        var formFile = new FileStreamResult(videoName, fileStream);
+        fileService.Setup(x => x.GetFileAsync(guid, videoName, CancellationToken.None)).ReturnsAsync(formFile);
 
-		// Act
-		var result = await gestaoApplication.GetVideoAsync(guid, videoName, CancellationToken.None);
+        // Act
+        var result = await gestaoApplication.GetVideoAsync(guid, videoName, CancellationToken.None);
 
-		// Assert
-		Assert.Equal(formFile, result);
-	}
+        // Assert
+        Assert.Equal(formFile, result);
+    }
 
-	[Fact]
+    [Fact]
     public async Task GetVideoAsync_WhenFileNotFound_ReturnsEntityNotFoundException()
     {
         // Arrange
@@ -47,27 +45,27 @@ public class GestaoApplicationUnitTests
     }
 
     [Fact]
-	public async Task GetVideoMetadataAsync_WhenCalled_ReturnsVideoMetadata()
-	{
-		// Arrange
-		var fileService = new Mock<IFileService>();
-		var gestaoApplication = new GestaoApplication(fileService.Object);
-		var guid = Guid.NewGuid();
-		var videoName = "video.mp4";
-		var videoStream = new MemoryStream([1, 2, 3]); 
-		var videoFile = new FileStreamResult(videoName, videoStream);
-		fileService.Setup(x => x.GetFileAsync(guid, videoName, CancellationToken.None)).ReturnsAsync(videoFile);
+    public async Task GetVideoMetadataAsync_WhenCalled_ReturnsVideoMetadata()
+    {
+        // Arrange
+        var fileService = new Mock<IFileService>();
+        var gestaoApplication = new GestaoApplication(fileService.Object);
+        var guid = Guid.NewGuid();
+        var videoName = "video.mp4";
+        var videoStream = new MemoryStream([1, 2, 3]);
+        var videoFile = new FileStreamResult(videoName, videoStream);
+        fileService.Setup(x => x.GetFileAsync(guid, videoName, CancellationToken.None)).ReturnsAsync(videoFile);
         fileService.Setup(x => x.GetFileAsync(guid, $"{videoName}.state", CancellationToken.None)).ThrowsAsync(new FileNotFoundException());
 
         // Act
         var result = await gestaoApplication.GetVideoMetadataAsync(guid, videoName, CancellationToken.None);
 
-		// Assert
-		Assert.Equal(videoName, result.Name);
+        // Assert
+        Assert.Equal(videoName, result.Name);
         Assert.Equal(VideoState.PENDING, result.State);
     }
 
-	[Fact]
+    [Fact]
     public async Task GetVideoMetadataAsync_WhenFileNotFound_ReturnsEntityNotFoundException()
     {
         // Arrange
@@ -83,15 +81,15 @@ public class GestaoApplicationUnitTests
     }
 
     [Fact]
-	public async Task ListAllVideosAsync_WhenCalled_ReturnsListOfVideoMetadata()
-	{
-		// Arrange
-		var fileService = new Mock<IFileService>();
-		var gestaoApplication = new GestaoApplication(fileService.Object);
-		var guid = Guid.NewGuid();
-		var videoName = "video.mp4";
-		var videoStream = new MemoryStream([1, 2, 3]); 
-		var videoFile = new FileStreamResult(videoName, videoStream);
+    public async Task ListAllVideosAsync_WhenCalled_ReturnsListOfVideoMetadata()
+    {
+        // Arrange
+        var fileService = new Mock<IFileService>();
+        var gestaoApplication = new GestaoApplication(fileService.Object);
+        var guid = Guid.NewGuid();
+        var videoName = "video.mp4";
+        var videoStream = new MemoryStream([1, 2, 3]);
+        var videoFile = new FileStreamResult(videoName, videoStream);
         var stateSrt = "FAILED";
         var stateFile = new FileStreamResult($"{videoName}.state", new MemoryStream(Encoding.UTF8.GetBytes(stateSrt)));
 
@@ -102,14 +100,14 @@ public class GestaoApplicationUnitTests
         // Act
         var result = await gestaoApplication.ListAllVideosAsync(guid, CancellationToken.None);
 
-		// Assert
-		Assert.NotNull(result);
-		Assert.NotEmpty(result);
-		Assert.Equal(videoName, result[0].Name);
+        // Assert
+        Assert.NotNull(result);
+        Assert.NotEmpty(result);
+        Assert.Equal(videoName, result[0].Name);
         Assert.Equal(stateSrt, result[0].State.ToString());
     }
 
-	[Fact]
+    [Fact]
     public async Task ListAllVideosAsync_WhenNoFiles_ReturnsEmptyList()
     {
         // Arrange
