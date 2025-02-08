@@ -21,6 +21,8 @@ namespace Fiap.FileCut.Infra.Api
                 cfg.AddPublisher<VideoUploadedEvent, VideoUploadedQueuePublish>();
                 cfg.AddPublisher<UserNotifyEvent, UserNotifyQueuePublish>();
             });
+
+            services.AddStorageService();
         }
 
         public static async Task ScopedFileCutUploadApi(this IServiceScope scope)
