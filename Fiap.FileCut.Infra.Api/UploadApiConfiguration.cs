@@ -1,4 +1,6 @@
 ﻿using Fiap.FileCut.Core.Adapters;
+using Fiap.FileCut.Core.Applications;
+using Fiap.FileCut.Core.Interfaces.Applications;
 using Fiap.FileCut.Core.Objects.QueueEvents;
 using Fiap.FileCut.Infra.Api.Configurations;
 using Fiap.FileCut.Infra.Api.Middlewares;
@@ -21,7 +23,7 @@ namespace Fiap.FileCut.Infra.Api
                 cfg.AddPublisher<VideoUploadedEvent, VideoUploadedQueuePublish>();
                 cfg.AddPublisher<UserNotifyEvent, UserNotifyQueuePublish>();
             });
-
+            services.AddScoped<IUploadApplication, UploadApplication>();
             services.AddStorageService();
         }
 
