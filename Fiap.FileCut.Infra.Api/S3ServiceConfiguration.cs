@@ -13,7 +13,6 @@ namespace Fiap.FileCut.Infra.Storage.Shared.Extensions
 	{
 		public static IServiceCollection AddS3Services(this IServiceCollection services, IConfiguration configuration)
 		{
-			// services.Configure<S3Config>(configuration.GetSection("AWS"));
 
 			services.Configure<S3Config>(c => {
 				c.AccessKey = Environment.GetEnvironmentVariable("AWS_ACCESS_KEY");
