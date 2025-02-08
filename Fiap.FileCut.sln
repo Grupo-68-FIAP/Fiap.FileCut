@@ -3,11 +3,11 @@ Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio Version 17
 VisualStudioVersion = 17.11.35327.3
 MinimumVisualStudioVersion = 10.0.40219.1
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Fiap.FileCut.Infra.Api", "Fiap.FileCut.Infra.Api\Fiap.FileCut.Infra.Api.csproj", "{E22AEAA6-63DE-4790-B560-260B42359210}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Fiap.FileCut.Infra.Api", "Fiap.FileCut.Infra.Api\Fiap.FileCut.Infra.Api.csproj", "{E22AEAA6-63DE-4790-B560-260B42359210}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Fiap.FileCut.Core", "Fiap.FileCut.Core\Fiap.FileCut.Core.csproj", "{EDB21828-7F39-46F1-861D-F6C8124599B1}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Fiap.FileCut.Core", "Fiap.FileCut.Core\Fiap.FileCut.Core.csproj", "{EDB21828-7F39-46F1-861D-F6C8124599B1}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Fiap.FileCut.Infra.Storage", "Fiap.FileCut.Infra.Storage\Fiap.FileCut.Infra.Storage.csproj", "{240F0128-FB40-4972-8FA3-646A93C54200}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Fiap.FileCut.Infra.Storage", "Fiap.FileCut.Infra.Storage\Fiap.FileCut.Infra.Storage.csproj", "{240F0128-FB40-4972-8FA3-646A93C54200}"
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Itens de Solução", "Itens de Solução", "{90E4ED8E-6986-4FE9-A42A-5E8515C54354}"
 	ProjectSection(SolutionItems) = preProject
@@ -20,11 +20,15 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "tests", "tests", "{E22893E1
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "src", "src", "{8E27F5EC-273E-4A7F-BC5F-8C8369E3620A}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Fiap.FileCut.Core.UnitTests", "Fiap.FileCut.Core.UnitTests\Fiap.FileCut.Core.UnitTests.csproj", "{91D92A1A-380E-465F-9F3B-9745A775D56E}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Fiap.FileCut.Core.UnitTests", "Fiap.FileCut.Core.UnitTests\Fiap.FileCut.Core.UnitTests.csproj", "{91D92A1A-380E-465F-9F3B-9745A775D56E}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Fiap.FileCut.Infra.RabbitMq", "Fiap.FileCut.Infra.RabbitMq\Fiap.FileCut.Infra.RabbitMq.csproj", "{1C922A08-FABC-4213-B99C-30588A34B933}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Fiap.FileCut.Processing", "Fiap.FileCut.Processing\Fiap.FileCut.Processing.csproj", "{4145954B-6087-43CD-B539-C10A1C191187}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Fiap.FileCut.Infra.RabbitMq.UnitTests", "Fiap.FileCut.Infra.RabbitMq.UnitTests\Fiap.FileCut.Infra.RabbitMq.UnitTests.csproj", "{B31D3C64-C4FF-419A-A51F-C3A89931BD2B}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Fiap.FileCut.Infra.RabbitMq", "Fiap.FileCut.Infra.RabbitMq\Fiap.FileCut.Infra.RabbitMq.csproj", "{1C922A08-FABC-4213-B99C-30588A34B933}"
+EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Fiap.FileCut.Infra.RabbitMq.UnitTests", "Fiap.FileCut.Infra.RabbitMq.UnitTests\Fiap.FileCut.Infra.RabbitMq.UnitTests.csproj", "{B31D3C64-C4FF-419A-A51F-C3A89931BD2B}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Fiap.FileCut.Processing.UnitTests", "Fiap.FileCut.Processing.UnitTests\Fiap.FileCut.Processing.UnitTests.csproj", "{CDADADB9-62B0-4C87-B501-1DEB94AFC103}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Fiap.FileCut.Infra.IdentityProvider", "Fiap.FileCut.Infra.IdentityProvider\Fiap.FileCut.Infra.IdentityProvider.csproj", "{274F330B-3A6E-4836-B5DE-307924E36801}"
 EndProject
@@ -54,6 +58,10 @@ Global
 		{91D92A1A-380E-465F-9F3B-9745A775D56E}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{91D92A1A-380E-465F-9F3B-9745A775D56E}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{91D92A1A-380E-465F-9F3B-9745A775D56E}.Release|Any CPU.Build.0 = Release|Any CPU
+		{4145954B-6087-43CD-B539-C10A1C191187}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{4145954B-6087-43CD-B539-C10A1C191187}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{4145954B-6087-43CD-B539-C10A1C191187}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{4145954B-6087-43CD-B539-C10A1C191187}.Release|Any CPU.Build.0 = Release|Any CPU
 		{1C922A08-FABC-4213-B99C-30588A34B933}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
 		{1C922A08-FABC-4213-B99C-30588A34B933}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{1C922A08-FABC-4213-B99C-30588A34B933}.Release|Any CPU.ActiveCfg = Release|Any CPU
@@ -62,6 +70,10 @@ Global
 		{B31D3C64-C4FF-419A-A51F-C3A89931BD2B}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{B31D3C64-C4FF-419A-A51F-C3A89931BD2B}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{B31D3C64-C4FF-419A-A51F-C3A89931BD2B}.Release|Any CPU.Build.0 = Release|Any CPU
+		{CDADADB9-62B0-4C87-B501-1DEB94AFC103}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{CDADADB9-62B0-4C87-B501-1DEB94AFC103}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{CDADADB9-62B0-4C87-B501-1DEB94AFC103}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{CDADADB9-62B0-4C87-B501-1DEB94AFC103}.Release|Any CPU.Build.0 = Release|Any CPU
 		{274F330B-3A6E-4836-B5DE-307924E36801}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
 		{274F330B-3A6E-4836-B5DE-307924E36801}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{274F330B-3A6E-4836-B5DE-307924E36801}.Release|Any CPU.ActiveCfg = Release|Any CPU
@@ -83,8 +95,10 @@ Global
 		{EDB21828-7F39-46F1-861D-F6C8124599B1} = {8E27F5EC-273E-4A7F-BC5F-8C8369E3620A}
 		{240F0128-FB40-4972-8FA3-646A93C54200} = {8E27F5EC-273E-4A7F-BC5F-8C8369E3620A}
 		{91D92A1A-380E-465F-9F3B-9745A775D56E} = {E22893E1-9183-4FC1-851E-9AB2966D05BD}
+		{4145954B-6087-43CD-B539-C10A1C191187} = {8E27F5EC-273E-4A7F-BC5F-8C8369E3620A}
 		{1C922A08-FABC-4213-B99C-30588A34B933} = {8E27F5EC-273E-4A7F-BC5F-8C8369E3620A}
 		{B31D3C64-C4FF-419A-A51F-C3A89931BD2B} = {E22893E1-9183-4FC1-851E-9AB2966D05BD}
+		{CDADADB9-62B0-4C87-B501-1DEB94AFC103} = {E22893E1-9183-4FC1-851E-9AB2966D05BD}
 		{274F330B-3A6E-4836-B5DE-307924E36801} = {8E27F5EC-273E-4A7F-BC5F-8C8369E3620A}
 		{6F29F84B-C6CB-4A73-96AB-539A28C34E00} = {E22893E1-9183-4FC1-851E-9AB2966D05BD}
 		{06E0F853-F147-449B-9B7F-C56432127137} = {E22893E1-9183-4FC1-851E-9AB2966D05BD}

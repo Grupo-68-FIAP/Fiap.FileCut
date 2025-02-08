@@ -1,6 +1,5 @@
 using Fiap.FileCut.Core.Interfaces.Repository;
 using Fiap.FileCut.Core.Interfaces.Services;
-using Fiap.FileCut.Core.Objects;
 using Fiap.FileCut.Infra.Storage.Shared.Models;
 using Microsoft.Extensions.Logging;
 
@@ -10,15 +9,12 @@ public class FileService : IFileService
 {
     private readonly IFileRepository _fileRepository;
     private readonly ILogger<FileService> _logger;
-    private readonly INotifyService _notifyService;
 
     public FileService(
         IFileRepository fileRepository,
-        INotifyService notifyService,
         ILogger<FileService> logger)
     {
         _fileRepository = fileRepository;
-        _notifyService = notifyService;
         _logger = logger;
     }
 
@@ -116,9 +112,6 @@ public class FileService : IFileService
             }
 
             _logger.LogInformation("[{source}] - File saved successfully. User: {UserId}, File: {FileName}", nameof(FileService), userId, fileName);
-
-            var messageContext = new NotifyContext<string>("Teste", Guid.NewGuid());
-            await _notifyService.NotifyAsync(messageContext);
 
             return result;
         }

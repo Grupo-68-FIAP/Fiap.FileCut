@@ -54,7 +54,7 @@ public class GestaoApplication(IFileService fileService) : IGestaoApplication
     {
         var fileNames = await fileService.GetFileNamesAsync(guid, cancellationToken);
         var metadataTasks = fileNames
-            .Where(file => !file.EndsWith(".state"))
+            .Where(file => !file.EndsWith(".state") && !file.EndsWith(".zip"))
             .Select(file => GetVideoMetadataAsync(guid, file, cancellationToken));
 
         var metadataList = await Task.WhenAll(metadataTasks);

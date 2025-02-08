@@ -1,8 +1,10 @@
 ﻿using Fiap.FileCut.Core.Adapters;
 using Fiap.FileCut.Core.Handlers;
+using Fiap.FileCut.Core.Interfaces.Services;
 using Fiap.FileCut.Core.Objects.QueueEvents;
 using Fiap.FileCut.Infra.Api.Configurations;
 using Fiap.FileCut.Infra.Api.Middlewares;
+using Fiap.FileCut.Processing.Services;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.Extensions.DependencyInjection;
 
@@ -15,16 +17,21 @@ namespace Fiap.FileCut.Infra.Api
             builder.Services.AddJwtBearerAuthentication();
             builder.Services.AddSwaggerFC();
             builder.Services.AddEnvCors();
+            builder.Services.AddNotifications();
+
             await builder.Services.AddQueue(cfg =>
             {
                 cfg.SubscribeQueue<VideoUploadedEvent, VideoProcessorConsumer>();
                 cfg.AddPublisher<UserNotifyEvent, UserNotifyQueuePublish>();
             });
+
+            builder.Services.AddStorageService();
+            builder.Services.AddSingleton<IVideoProcessingService, VideoProcessingService>();
         }
 
-        public static Task ScopedFileCutProcessamentoApi(this IServiceScope scope)
+        public static async Task ScopedFileCutProcessamentoApi(this IServiceScope scope)
         {
-            return Task.CompletedTask;
+            await scope.UseQueue();
         }
 
         public static Task InitializeFileCutProcessamentoApi(this IApplicationBuilder app)
