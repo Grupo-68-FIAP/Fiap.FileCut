@@ -111,8 +111,8 @@ public class LocalDiskFileRepository : IFileRepository
 			EnsureDirectoryExists(userFolderPath);
 
 			string filePath = Path.Combine(userFolderPath, fileName);
-
-			using (var outputStream = new FileStream(filePath, FileMode.Create, FileAccess.Write, FileShare.None))
+			fileStream.Seek(0, SeekOrigin.Begin);
+            using (var outputStream = new FileStream(filePath, FileMode.Create, FileAccess.Write, FileShare.None))
 			{
 				await fileStream.CopyToAsync(outputStream, cancellationToken);
 			}
