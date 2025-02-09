@@ -1,6 +1,4 @@
-﻿using Castle.Core.Internal;
-using Fiap.FileCut.Core.Attributes;
-using System.Drawing;
+﻿using Fiap.FileCut.Core.Attributes;
 using System.Reflection;
 
 namespace Fiap.FileCut.Core.UnitTests.Attributes;

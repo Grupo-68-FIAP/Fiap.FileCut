@@ -11,7 +11,7 @@ public static class StorageConfig
 {
     public static void AddStorageService(this IServiceCollection services)
     {
-        var storageProvider = Environment.GetEnvironmentVariable("STORAGE_PROVIDER");
+        var storageProvider = Environment.GetEnvironmentVariable("AWS_BUCKET_NAME");
 
         if (!String.IsNullOrEmpty(storageProvider))
             services.AddScoped<IFileRepository, S3FileRepository>();
